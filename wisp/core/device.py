@@ -436,6 +436,13 @@ class WispDevice(metaclass=WispDeviceMeta):
         if "error" in command:
             return f"❌ {command['error']}"
 
+        # Handle built-in virtual actions before dispatching to execute()
+        action = command.get("action", "")
+        if action == "list_capabilities":
+            return self.on_reply(user, self._reply_list_capabilities())
+        if action == "all_sensors":
+            return self.on_reply(user, await self._reply_all_sensors())
+
         try:
             result = self.execute(command)
         except CapabilityError as exc:
@@ -445,6 +452,42 @@ class WispDevice(metaclass=WispDeviceMeta):
 
         reply = _format_result(result)
         return self.on_reply(user, reply)
+
+    def _reply_list_capabilities(self) -> str:
+        caps = self._wisp_registry.all()
+        if not caps:
+            return "I don't have any capabilities configured yet."
+        lines = ["Here's what I can do:"]
+        for cap in caps:
+            name = cap.name.replace("_", " ").title()
+            lines.append(f"• {name} — {cap.description}")
+        return "\n".join(lines)
+
+    async def _reply_all_sensors(self) -> str:
+        caps = self._wisp_registry.all()
+        read_caps = [c for c in caps if c.name.startswith("read_")]
+        if read_caps:
+            all_results: Dict[str, Any] = {}
+            for cap in read_caps:
+                try:
+                    result = cap(self)
+                    if isinstance(result, dict):
+                        all_results.update(result)
+                except Exception as exc:  # noqa: BLE001
+                    all_results[cap.name] = f"error: {exc}"
+            return _format_result(all_results)
+        # No read_ caps — gather everything except set_ actions
+        all_results = {}
+        for cap in caps:
+            if cap.name.startswith("set_"):
+                continue
+            try:
+                result = cap(self)
+                if isinstance(result, dict):
+                    all_results.update(result)
+            except Exception:  # noqa: BLE001
+                pass
+        return _format_result(all_results) if all_results else "No sensor data available."
 
     def __repr__(self) -> str:
         caps = self._wisp_registry.names()
@@ -483,6 +526,13 @@ def _format_result(result: Dict[str, Any]) -> str:
     if "error" in result:
         return f"❌ {result['error']}"
 
+    # Natural sentence for GPIO toggle: {output: relay_1, state: on}
+    if set(result.keys()) <= {"output", "state"}:
+        name = result.get("output", "output").replace("_", " ")
+        state = result.get("state", "")
+        emoji = "💡" if "led" in name.lower() else "⚡"
+        return f"{emoji} {name} is now {state}"
+
     EMOJI = {
         "temperature": "🌡",
         "humidity": "💧",
@@ -493,7 +543,6 @@ def _format_result(result: Dict[str, Any]) -> str:
         "accel": "📐",
         "gyro": "🔄",
         "status": "✅",
-        "state": "✅",
         "output": "⚡",
         "relay": "⚡",
         "led": "💡",
@@ -504,9 +553,10 @@ def _format_result(result: Dict[str, Any]) -> str:
         if k in ("raw", "_meta"):
             continue
         emoji = next((e for key, e in EMOJI.items() if key in k.lower()), "•")
+        label = k.replace("_", " ").capitalize()
         if isinstance(v, float):
-            lines.append(f"{emoji} {k}: {v:.2f}")
+            lines.append(f"{emoji} {label}: {v:.2f}")
         else:
-            lines.append(f"{emoji} {k}: {v}")
+            lines.append(f"{emoji} {label}: {v}")
 
     return "\n".join(lines) if lines else "✅ Done"

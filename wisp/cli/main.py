@@ -99,13 +99,45 @@ def cmd_new(args: argparse.Namespace) -> None:
 
     _write_template(dest, name, template)
 
+    # Build capability summary from the generated config
+    import json as _json
+    config_path = dest / "config.json"
+    cap_lines = []
+    try:
+        cfg = _json.loads(config_path.read_text(encoding="utf-8").format(name=name)
+                         if "{name}" in config_path.read_text(encoding="utf-8") else
+                         config_path.read_text(encoding="utf-8"))
+        gpio = cfg.get("hardware", {}).get("gpio_outputs", {})
+        for output_name in gpio:
+            cap_lines.append(f"   • set_{output_name} — turn {output_name.replace('_', ' ')} on or off")
+    except Exception:
+        pass
+
+    # Add capabilities defined in the main.py template (static per template)
+    template_caps = {
+        "basic":   ["   • status         — report device status"],
+        "sensors": ["   • read_all        — read all connected sensors at once"],
+        "ros2":    ["   • status         — report robot status"],
+    }
+    static_caps = template_caps.get(template, [])
+    all_caps = static_caps + cap_lines + [
+        "   • list_capabilities — list everything I can do  (built-in)",
+        "   • all_sensors       — return all sensor readings (built-in)",
+    ]
+
+    caps_block = "\n".join(all_caps)
+
     print(f"""
 ✅  WISP project '{name}' created!
 
+Default capabilities (say these to your bot):
+{caps_block}
+
+Next steps:
    cd {name}
    # Edit config.json — add your Telegram token and AI API key
+   wisp simulate       # test locally without Telegram
    wisp run            # start with Telegram transport
-   wisp simulate       # test interactively without Telegram
 """)
 
 

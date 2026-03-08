@@ -47,6 +47,7 @@ class GroqProvider:
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.api_key}",
+                "User-Agent": "groq-python/0.18.0",
             },
             method="POST",
         )
