@@ -136,6 +136,24 @@ class WispDevice(metaclass=WispDeviceMeta):
         plugin.attach(self)
         return self
 
+    def add_capability(self, spec: CapabilitySpec) -> None:
+        """
+        Register a capability on this device instance at runtime.
+
+        Use this inside a plugin's ``attach()`` method instead of
+        accessing the private ``_wisp_registry`` directly::
+
+            class MyPlugin(WispPlugin):
+                def attach(self, device):
+                    spec = CapabilitySpec(
+                        name="do_thing",
+                        description="Does the thing",
+                        fn=self._do_thing,
+                    )
+                    device.add_capability(spec)  # preferred public API
+        """
+        self._wisp_registry.register(spec)
+
     # ------------------------------------------------------------------ #
     # Properties                                                          #
     # ------------------------------------------------------------------ #

@@ -138,7 +138,7 @@ class ROS2Plugin:
         else:
             spec = CapabilitySpec(name=cap_name, description=cap_desc, fn=lambda self_dev: {"status": f"{cap_name} present"})
 
-        device._wisp_registry.register(spec)
+        device.add_capability(spec)
 
     def _make_movement_spec(self, node: Any) -> "CapabilitySpec":
         from wisp.core.capability import CapabilitySpec, CapabilityParam

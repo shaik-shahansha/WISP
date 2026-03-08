@@ -25,5 +25,9 @@ class WispPlugin(ABC):
     def attach(self, device: "WispDevice") -> None:
         """
         Called when the plugin is attached to a device.
-        Register capabilities on ``device`` here.
+
+        Register capabilities using the public API::
+
+            spec = CapabilitySpec(name="my_cap", description="...", fn=self._fn)
+            device.add_capability(spec)
         """

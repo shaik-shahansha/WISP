@@ -246,7 +246,7 @@ class WeatherPlugin(WispPlugin):
             description="Get current weather from OpenMeteo API",
             fn=self._read_weather,
         )
-        device._wisp_registry.register(spec)
+        device.add_capability(spec)
 
     def _read_weather(self, device):
         import urllib.request, json
@@ -325,15 +325,25 @@ wisp version                  # print version
 
 ## For microcontrollers (ESP32 / Pico W)
 
-WISP runs on MicroPython 1.21+ without modification.
-The `device/` directory is the same code that runs on any platform.
+This `wisp` package targets **CPython 3.9+** and runs on any Linux-capable device
+(Raspberry Pi, NVIDIA Jetson, x86 SBC, etc.).
+
+For bare-metal microcontrollers (ESP32, Pi Pico W) a **separate MicroPython port**
+lives in the [`wisp/device/`](../wisp/) directory. It shares the same high-level
+concepts (AI ↔ capabilities ↔ hardware) but is a distinct, stripped-down codebase
+that avoids CPython-only features (`dataclasses`, `typing`, `enum`).
 
 ```bash
+# Flash the MicroPython port to your board
 pip install mpremote
-mpremote connect auto cp -r device/. :
+mpremote connect auto cp -r wisp/device/. :
 ```
 
-See the [legacy device/ directory](../wisp/) for the original MicroPython implementation.
+> **Platform summary**
+> | Runtime | Target | Package |
+> |---------|--------|---------|
+> | CPython 3.9+ | Raspberry Pi, Linux SBC, Desktop | `pip install wisp-ai` |
+> | MicroPython 1.21+ | ESP32, Pi Pico W | copy `wisp/device/` via mpremote |
 
 ---
 
