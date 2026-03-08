@@ -1,6 +1,7 @@
 # WISP
+### **W**ireless **I**ntelligence for **S**mart **P**eripherals
 
-### The natural language remote control framework for physical devices.
+#### The natural language remote control framework for physical devices.
 
 **Think of it like ChatGPT for your hardware — ESP32, Raspberry Pi, ROS2 robots, and more.**
 
@@ -22,7 +23,7 @@ WISP: 🌡 temperature: 24.3°C  ✅ fan: ON
 
 ## What is WISP?
 
-WISP is a Python framework that lets you control **physical hardware** with natural language.
+**WISP** (**W**ireless **I**ntelligence for **S**mart **P**eripherals) is a Python framework that lets you control **physical hardware** with natural language.
 Think of it as **ChatGPT for your ESP32, Raspberry Pi, or robot** — you describe what your device can do with plain Python methods, and WISP handles the rest.
 
 No MQTT broker. No gateway. No local LLM. No cloud server.
