@@ -16,8 +16,23 @@ class BaseTransport(ABC):
         self.device = device
 
     @abstractmethod
-    def start(self) -> None:
-        """Start the transport (blocking)."""
+    async def start(self) -> None:
+        """Start the transport (runs until stopped)."""
 
     def stop(self) -> None:
         """Gracefully stop the transport."""
+
+
+async def _run_blocking(fn, *args):
+    """
+    Run a blocking function without stalling the event loop.
+
+    On CPython uses ``loop.run_in_executor`` (thread pool).
+    On MicroPython (no threadpool) calls directly — the event loop
+    yields between tasks so short blocking calls are acceptable.
+    """
+    import asyncio
+    loop = asyncio.get_event_loop()
+    if hasattr(loop, "run_in_executor"):
+        return await loop.run_in_executor(None, fn, *args)
+    return fn(*args)  # MicroPython: call directly

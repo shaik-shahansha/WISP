@@ -7,10 +7,10 @@ Parses the AI response JSON into a capability command dict.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
-import time
 from typing import Any, Dict, List, Optional
 
 from wisp.ai.prompt import build_system_prompt
@@ -31,7 +31,7 @@ class AIClient:
     Usage::
 
         client = AIClient(config.ai)
-        command = client.parse(
+        command = await client.parse(
             user_message="turn on the fan",
             capabilities=[{"name": "set_relay", "description": "..."}],
             device_name="my_device",
@@ -43,7 +43,7 @@ class AIClient:
         self._config = config
         self._provider = _build_provider(config)
 
-    def parse(
+    async def parse(
         self,
         user_message: str,
         capabilities: List[Dict[str, Any]],
@@ -52,7 +52,7 @@ class AIClient:
     ) -> Dict[str, Any]:
         """
         Send a user message + capability schema to the AI.
-        Returns a parsed command dict.
+        Returns a parsed command dict. Non-blocking — runs HTTP in executor.
         """
         system_prompt = build_system_prompt(
             device_name=device_name,
@@ -67,10 +67,16 @@ class AIClient:
 
         logger.debug("AI request: %r", user_message)
 
+        loop = asyncio.get_event_loop()
         last_exc: Exception = AIError("No attempts made")
+
         for attempt in range(_AI_RETRIES):
             try:
-                raw = self._provider.complete(messages)
+                # Run blocking urllib call in executor — doesn't stall the event loop
+                if hasattr(loop, "run_in_executor"):
+                    raw = await loop.run_in_executor(None, self._provider.complete, messages)
+                else:
+                    raw = self._provider.complete(messages)  # MicroPython
                 break
             except AIError as exc:
                 last_exc = exc
@@ -80,7 +86,7 @@ class AIClient:
                         "AI request failed (attempt %d/%d): %s — retrying in %.1fs",
                         attempt + 1, _AI_RETRIES, exc, delay,
                     )
-                    time.sleep(delay)
+                    await asyncio.sleep(delay)
         else:
             raise last_exc
 

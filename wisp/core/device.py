@@ -23,6 +23,7 @@ Subclass WispDevice, decorate methods with @capability, call .run().
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import logging
 from pathlib import Path
@@ -272,6 +273,19 @@ class WispDevice(metaclass=WispDeviceMeta):
         log_level : str
             Python logging level string, default ``"INFO"``.
         """
+        asyncio.run(self._run_async(transport, auto_discover_hardware, log_level))
+
+    # ------------------------------------------------------------------ #
+    # Async entry point                                                   #
+    # ------------------------------------------------------------------ #
+
+    async def _run_async(
+        self,
+        transport: Optional[str],
+        auto_discover_hardware: bool,
+        log_level: str,
+    ) -> None:
+        """Async body of run() — sets up hardware/AI then starts the transport."""
         _setup_logging(log_level)
 
         self.config.validate()
@@ -287,11 +301,9 @@ class WispDevice(metaclass=WispDeviceMeta):
             self.config.ai.model,
         )
 
-        # Auto-discover I2C sensors and add them as capabilities
         if auto_discover_hardware:
             self._auto_discover()
 
-        # Print capability list
         caps = self._wisp_registry.all()
         self._logger.info(
             "Capabilities (%d): %s",
@@ -299,14 +311,11 @@ class WispDevice(metaclass=WispDeviceMeta):
             ", ".join(c.name for c in caps),
         )
 
-        # Call user hook
         self.on_boot()
 
-        # Start the AI client
         from wisp.ai.client import AIClient
         self._ai_client = AIClient(self.config.ai)
 
-        # Start the transport
         if chosen_transport == "telegram":
             from wisp.transports.telegram import TelegramTransport
             self._transport = TelegramTransport(self)
@@ -322,7 +331,7 @@ class WispDevice(metaclass=WispDeviceMeta):
                 "Available: telegram, cli, http"
             )
 
-        self._transport.start()
+        await self._transport.start()
 
     # ------------------------------------------------------------------ #
     # Auto-discovery                                                      #
@@ -400,7 +409,7 @@ class WispDevice(metaclass=WispDeviceMeta):
     # AI message processing (called by transports)                       #
     # ------------------------------------------------------------------ #
 
-    def process_message(self, user: str, text: str) -> str:
+    async def process_message(self, user: str, text: str) -> str:
         """
         Full pipeline: natural language → AI → execute capability → reply.
         Called internally by transports.
@@ -414,7 +423,7 @@ class WispDevice(metaclass=WispDeviceMeta):
             return "❌ AI client not initialised."
 
         try:
-            command = self._ai_client.parse(
+            command = await self._ai_client.parse(
                 user_message=text,
                 capabilities=self._wisp_registry.to_ai_schema(),
                 device_name=self.name,

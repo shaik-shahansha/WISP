@@ -8,10 +8,11 @@ Use this for local testing without a Telegram bot.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import TYPE_CHECKING
 
-from wisp.transports.base import BaseTransport
+from wisp.transports.base import BaseTransport, _run_blocking
 
 if TYPE_CHECKING:
     from wisp.core.device import WispDevice
@@ -34,7 +35,7 @@ Type your command, or "quit" / Ctrl+C to exit.
 class CLITransport(BaseTransport):
     """Interactive REPL transport for testing without Telegram."""
 
-    def start(self) -> None:
+    async def start(self) -> None:
         device = self.device
         caps = ", ".join(device.capabilities.names())
         print(
@@ -48,7 +49,9 @@ class CLITransport(BaseTransport):
 
         while True:
             try:
-                text = input("You: ").strip()
+                # Run blocking input() in executor so the event loop stays free
+                text = await _run_blocking(input, "You: ")
+                text = text.strip()
             except (EOFError, KeyboardInterrupt):
                 print("\nGoodbye.")
                 break
@@ -59,5 +62,5 @@ class CLITransport(BaseTransport):
                 print("Goodbye.")
                 break
 
-            reply = device.process_message(user="cli_user", text=text)
+            reply = await device.process_message(user="cli_user", text=text)
             print(f"WISP: {reply}\n")

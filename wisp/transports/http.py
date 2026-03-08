@@ -17,9 +17,10 @@ GET /health
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import TYPE_CHECKING, Any
 
 from wisp.transports.base import BaseTransport
@@ -36,7 +37,10 @@ DEFAULT_PORT = 8080
 
 class HTTPTransport(BaseTransport):
     """
-    Minimal HTTP webhook transport.
+    Minimal HTTP webhook transport (async-compatible).
+
+    The synchronous ``ThreadingHTTPServer`` runs in an executor so it
+    does not block the asyncio event loop.
 
     Configuration (optional, via config.json)::
 
@@ -52,9 +56,11 @@ class HTTPTransport(BaseTransport):
         self._host = raw.get("host", DEFAULT_HOST)
         self._port = int(raw.get("port", DEFAULT_PORT))
 
-    def start(self) -> None:
+    async def start(self) -> None:
         device = self.device
         logger.info("HTTP transport listening on http://%s:%d", self._host, self._port)
+
+        loop = asyncio.get_event_loop()
 
         class Handler(BaseHTTPRequestHandler):
             def log_message(self, fmt: str, *args: Any) -> None:
@@ -90,7 +96,11 @@ class HTTPTransport(BaseTransport):
                     self._json(400, {"error": "Missing 'text' field"})
                     return
 
-                reply = device.process_message(user=user, text=text)
+                # Bridge sync handler → async process_message via the event loop
+                future = asyncio.run_coroutine_threadsafe(
+                    device.process_message(user=user, text=text), loop
+                )
+                reply = future.result(timeout=60)
                 self._json(200, {"reply": reply})
 
             def _json(self, status: int, data: Any) -> None:
@@ -103,8 +113,10 @@ class HTTPTransport(BaseTransport):
 
         server = ThreadingHTTPServer((self._host, self._port), Handler)
         try:
-            server.serve_forever()
-        except KeyboardInterrupt:
+            # Run blocking serve_forever in a thread so the event loop stays free
+            await loop.run_in_executor(None, server.serve_forever)
+        except (KeyboardInterrupt, asyncio.CancelledError):
             logger.info("HTTP transport stopped.")
         finally:
+            server.shutdown()
             server.server_close()
