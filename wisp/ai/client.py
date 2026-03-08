@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
 from typing import Any, Dict, List, Optional
 
 from wisp.ai.prompt import build_system_prompt
@@ -17,6 +18,10 @@ from wisp.core.config import AIConfig
 from wisp.core.errors import AIError
 
 logger = logging.getLogger("wisp.ai")
+
+# Retry policy for transient AI API failures (network blips, 429 rate-limits)
+_AI_RETRIES = 3
+_AI_BACKOFF_BASE = 1.5  # seconds; delay = base ** attempt (1.5s, 2.25s, 3.375s)
 
 
 class AIClient:
@@ -61,9 +66,25 @@ class AIClient:
         ]
 
         logger.debug("AI request: %r", user_message)
-        raw = self._provider.complete(messages)
-        logger.debug("AI raw response: %r", raw)
 
+        last_exc: Exception = AIError("No attempts made")
+        for attempt in range(_AI_RETRIES):
+            try:
+                raw = self._provider.complete(messages)
+                break
+            except AIError as exc:
+                last_exc = exc
+                if attempt < _AI_RETRIES - 1:
+                    delay = _AI_BACKOFF_BASE ** (attempt + 1)
+                    logger.warning(
+                        "AI request failed (attempt %d/%d): %s — retrying in %.1fs",
+                        attempt + 1, _AI_RETRIES, exc, delay,
+                    )
+                    time.sleep(delay)
+        else:
+            raise last_exc
+
+        logger.debug("AI raw response: %r", raw)
         return _parse_response(raw)
 
     @property

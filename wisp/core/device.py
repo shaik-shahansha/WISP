@@ -358,7 +358,10 @@ class WispDevice(metaclass=WispDeviceMeta):
         from wisp.core.capability import CapabilitySpec
 
         def read_fn(self_dev: "WispDevice", _name: str = sensor_name, _obj: Any = sensor_obj) -> Dict[str, Any]:
-            return _obj.read()
+            try:
+                return _obj.read()
+            except Exception as exc:  # noqa: BLE001
+                return {"error": f"{_name} read failed: {exc}"}
 
         spec = CapabilitySpec(
             name=f"read_{sensor_name}",

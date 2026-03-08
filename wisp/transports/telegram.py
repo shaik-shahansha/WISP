@@ -13,6 +13,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from wisp.transports.base import BaseTransport
@@ -42,6 +43,9 @@ class TelegramTransport(BaseTransport):
         self._allowed_users: List[int] = device.config.telegram.allowed_users
         self._offset = 0
         self._running = False
+        # Each incoming message is dispatched to a thread so the poll loop
+        # remains live while the AI HTTP call is in flight.
+        self._executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="wisp-msg")
 
     # ------------------------------------------------------------------ #
     # Public                                                               #
@@ -55,6 +59,7 @@ class TelegramTransport(BaseTransport):
 
     def stop(self) -> None:
         self._running = False
+        self._executor.shutdown(wait=False)
 
     # ------------------------------------------------------------------ #
     # Internal                                                             #
@@ -110,8 +115,15 @@ class TelegramTransport(BaseTransport):
 
         logger.info("[%s] %s", username, text)
 
-        # Process through device
-        reply = self.device.process_message(user=username, text=text)
+        # Dispatch to thread pool so the poll loop isn't blocked by the AI call
+        self._executor.submit(self._process_and_reply, chat_id, username, text)
+
+    def _process_and_reply(self, chat_id: int, username: str, text: str) -> None:
+        try:
+            reply = self.device.process_message(user=username, text=text)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Unhandled error processing message from %s: %s", username, exc)
+            reply = self.device.on_error(exc)
         self._send(chat_id, reply)
 
     def _send(self, chat_id: int, text: str) -> None:

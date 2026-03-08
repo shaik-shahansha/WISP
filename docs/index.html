@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>WISP — Natural Language Remote Control for Devices</title>
-  <meta name="description" content="The Python framework that gives any device a voice. Control ESP32, Raspberry Pi, and ROS2 robots with natural language via Telegram."/>
+  <meta name="description" content="ChatGPT for your ESP32, Raspberry Pi, and robot. Control any device with natural language via Telegram — no MQTT, no gateway, no local LLM needed."/>
   <link rel="stylesheet" href="style.css"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
   <style>
@@ -65,9 +65,11 @@
       Natural language remote control<br/>
       <span>for physical devices.</span>
     </h1>
-    <p class="tagline" style="font-size:1.2rem;color:var(--text-muted);max-width:620px;margin:0 auto 32px;line-height:1.8;">
-      Give any device a voice — ESP32, Raspberry Pi, and ROS2 robots.
-      Describe what your device can do. WISP handles the rest.
+    <p class="tagline" style="font-size:1.15rem;color:var(--text-muted);max-width:660px;margin:0 auto 8px;line-height:1.8;">
+      Think of it like ChatGPT for your hardware &mdash; ESP32, Raspberry Pi, ROS2 robots, and more.
+    </p>
+    <p style="font-size:0.95rem;color:var(--text-dim);max-width:620px;margin:0 auto 32px;line-height:1.8;">
+      No MQTT. No gateway. No local LLM. Just a free API key and a few lines of Python.
     </p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="quickstart.html" style="padding:12px 28px;font-size:1rem;">Get started in 5 minutes →</a>
@@ -75,11 +77,18 @@
     </div>
 
     <!-- Install strip -->
-    <div style="display:inline-flex;align-items:center;gap:12px;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 20px;font-family:var(--font-mono);font-size:0.9rem;color:var(--text-muted);margin-bottom:48px;">
+    <div style="display:inline-flex;align-items:center;gap:12px;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 20px;font-family:var(--font-mono);font-size:0.9rem;color:var(--text-muted);margin-bottom:16px;">
       <span style="color:var(--accent2);">$</span>
       <span>pip install wisp-ai</span>
       <span style="color:var(--text-dim);">·</span>
       <span style="color:var(--text-dim);">zero dependencies</span>
+    </div>
+    <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;font-size:0.88rem;color:var(--text-muted);margin-bottom:40px;">
+      <span>✅ No MQTT</span>
+      <span>✅ No gateway</span>
+      <span>✅ No local LLM</span>
+      <span>✅ No cloud server</span>
+      <span>✅ No custom training</span>
     </div>
 
     <!-- Code demo tabs -->
@@ -168,9 +177,14 @@ device.run()            <span class="cm"># auto-discovers: movement, lidar, batt
         <p>Core uses Python stdlib only. Install <code>wisp-ai</code> and start. No numpy, no frameworks, no surprises.</p>
       </div>
       <div class="feature-card">
+        <div class="icon">🚫</div>
+        <h3>No MQTT. No gateway.</h3>
+        <p>No broker to set up, no gateway to maintain, no local LLM to run. Your device talks to the AI directly over HTTPS.</p>
+      </div>
+      <div class="feature-card">
         <div class="icon">🔌</div>
         <h3>Any hardware</h3>
-        <p>ESP32, Pico W, Raspberry Pi, ROS2 Robot — same framework, same API, different config.</p>
+        <p>ESP32 &amp; Pico W (MicroPython), Raspberry Pi, ROS2 Robot — same framework, same API, different config.</p>
       </div>
       <div class="feature-card">
         <div class="icon">🤖</div>
@@ -196,7 +210,7 @@ device.run()            <span class="cm"># auto-discovers: movement, lidar, batt
       <div class="split-text">
         <h2>Simple concept. Powerful result.</h2>
         <p class="lead">You describe what your device can do. WISP tells the AI. The AI translates natural language into a hardware action.</p>
-        <p>No custom NLP. No training. No server. The AI is grounded in a live list of real capabilities at every request.</p>
+        <p>No custom NLP. No training. No MQTT broker. No IoT gateway. No local LLM or GPU. The AI is grounded in a live list of your real capabilities at every request — just a free cloud API key.</p>
         <ul style="color:var(--text-muted);font-size:0.95rem;margin-top:16px;">
           <li>Capabilities auto-discovered from I2C or ROS2 graph at boot</li>
           <li>AI returns a structured JSON command every time</li>
@@ -241,13 +255,13 @@ device.run()            <span class="cm"># auto-discovers: movement, lidar, batt
           <td><strong>ESP32</strong></td>
           <td>MicroPython 1.21+</td>
           <td>I2C bus scan</td>
-          <td><code>mpremote cp -r device/. :</code></td>
+          <td><code>mpremote cp -r . :</code></td>
         </tr>
         <tr>
           <td><strong>Raspberry Pi Pico W</strong></td>
           <td>MicroPython 1.21+</td>
           <td>I2C bus scan</td>
-          <td><code>mpremote cp -r device/. :</code></td>
+          <td><code>mpremote cp -r . :</code></td>
         </tr>
         <tr>
           <td><strong>Raspberry Pi</strong></td>
@@ -274,7 +288,7 @@ device.run()            <span class="cm"># auto-discovers: movement, lidar, batt
   <!-- CTA -->
   <section class="section" style="text-align:center;border-bottom:none;">
     <h2 style="border:none;padding:0;margin:0 0 16px;font-size:2rem;">Ready to give your device a voice?</h2>
-    <p style="color:var(--text-muted);font-size:1.05rem;margin-bottom:32px;">Get running in 5 minutes. Free Telegram bot. Free AI API key. No server needed.</p>
+    <p style="color:var(--text-muted);font-size:1.05rem;margin-bottom:32px;">Get running in 5 minutes. Free Telegram bot. Free AI API key. No MQTT, no gateway, no local LLM, no server.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <a class="btn btn-primary" href="quickstart.html" style="padding:12px 28px;font-size:1rem;">Start building →</a>
       <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank" style="padding:12px 28px;font-size:1rem;">View on GitHub</a>

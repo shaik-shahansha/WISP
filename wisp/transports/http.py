@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import json
 import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from typing import TYPE_CHECKING, Any
 
 from wisp.transports.base import BaseTransport
@@ -101,7 +101,7 @@ class HTTPTransport(BaseTransport):
                 self.end_headers()
                 self.wfile.write(body)
 
-        server = HTTPServer((self._host, self._port), Handler)
+        server = ThreadingHTTPServer((self._host, self._port), Handler)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

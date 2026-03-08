@@ -2,7 +2,7 @@
 
 ### The natural language remote control framework for physical devices.
 
-**Give any device a voice — ESP32, Raspberry Pi, ROS2 robots, and more.**
+**Think of it like ChatGPT for your hardware — ESP32, Raspberry Pi, ROS2 robots, and more.**
 
 [![PyPI version](https://img.shields.io/pypi/v/wisp-ai.svg?color=blue&logo=pypi&label=wisp-ai)](https://pypi.org/project/wisp-ai/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://python.org)
@@ -16,15 +16,17 @@ WISP: 🌡 temperature: 24.3°C  ✅ fan: ON
    ↑  real hardware action
 ```
 
-> **"Your chip. Your robot. Your AI. No server needed."**
+> **"ChatGPT for your ESP32, Pi, and robot — no MQTT, no gateway, no local LLM needed."**
 
 ---
 
 ## What is WISP?
 
 WISP is a Python framework that lets you control **physical hardware** with natural language.
-You describe what your device can do with plain Python methods.
-WISP handles talking to the AI, translating what users say into real hardware actions, and sending the reply back — all without a server, MQTT broker, or cloud middleware.
+Think of it as **ChatGPT for your ESP32, Raspberry Pi, or robot** — you describe what your device can do with plain Python methods, and WISP handles the rest.
+
+No MQTT broker. No gateway. No local LLM. No cloud server.
+WISP handles talking to the AI (via a free cloud API), translating what users say into real hardware actions, and sending the reply back — all in a few lines of Python.
 
 ```
 [Your Phone]
@@ -40,6 +42,16 @@ WISP handles talking to the AI, translating what users say into real hardware ac
 
 **The core idea:** the AI only ever sees the capabilities *you* define.
 It cannot hallucinate a LiDAR that isn't there.
+
+### What you do NOT need
+
+| ❌ Not needed | ✅ Why |
+|---|---|
+| MQTT broker | WISP talks directly to the AI over HTTPS |
+| IoT gateway / hub | Your device connects straight out — no middleman |
+| Local LLM / GPU | Uses Groq or OpenRouter — free cloud APIs, runs on any chip |
+| Cloud backend / VPS | Telegram acts as the transport layer; no port-forwarding |
+| Custom NLP / training | AI is grounded in your capability list at every request |
 
 ---
 
@@ -157,10 +169,10 @@ WISP: 🌡 temperature: 24.30
 | Platform | How to run | Auto-discovers |
 |----------|------------|----------------|
 | **ESP32** | MicroPython 1.21+ via `mpremote` | I2C sensors, GPIO |
-| **Pi Pico W** | MicroPython 1.21+ | I2C sensors, GPIO |
+| **Pi Pico W** | MicroPython 1.21+ via `mpremote` | I2C sensors, GPIO |
 | **Raspberry Pi** | `pip install wisp-ai[rpi]` | I2C via smbus2, BCM GPIO |
 | **ROS2 Robot** | `pip install wisp-ai` + `rclpy` | Live ROS2 topic graph |
-| **Any Linux** | `pip install wisp-ai` | Mock hardware, custom capabilities |
+| **Any Linux / macOS** | `pip install wisp-ai` | Mock hardware, custom capabilities |
 | **Desktop** | `pip install wisp-ai` | `wisp simulate` for testing |
 
 ---
@@ -325,25 +337,22 @@ wisp version                  # print version
 
 ## For microcontrollers (ESP32 / Pico W)
 
-This `wisp` package targets **CPython 3.9+** and runs on any Linux-capable device
-(Raspberry Pi, NVIDIA Jetson, x86 SBC, etc.).
-
-For bare-metal microcontrollers (ESP32, Pi Pico W) a **separate MicroPython port**
-lives in the [`wisp/device/`](../wisp/) directory. It shares the same high-level
-concepts (AI ↔ capabilities ↔ hardware) but is a distinct, stripped-down codebase
-that avoids CPython-only features (`dataclasses`, `typing`, `enum`).
+WISP runs on MicroPython 1.21+ directly on the chip — the same codebase, no changes needed.
+The HAL auto-detects `sys.implementation.name == "micropython"` at boot and switches to
+`machine.I2C` / `machine.Pin` automatically.
 
 ```bash
-# Flash the MicroPython port to your board
+# Copy WISP to your board
 pip install mpremote
-mpremote connect auto cp -r wisp/device/. :
+mpremote connect auto cp -r . :
+mpremote run main.py
 ```
 
 > **Platform summary**
 > | Runtime | Target | Package |
 > |---------|--------|---------|
 > | CPython 3.9+ | Raspberry Pi, Linux SBC, Desktop | `pip install wisp-ai` |
-> | MicroPython 1.21+ | ESP32, Pi Pico W | copy `wisp/device/` via mpremote |
+> | MicroPython 1.21+ | ESP32, Pi Pico W | copy via mpremote |
 
 ---
 
