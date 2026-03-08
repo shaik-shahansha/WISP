@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "wisp-ai"
+version = "0.1.0"
+description = "Natural language remote control for physical devices — ESP32, Raspberry Pi, ROS2 robots and more"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "WISP Contributors" }]
+keywords = [
+    "iot", "hardware", "natural-language", "telegram", "ai",
+    "embedded", "esp32", "raspberry-pi", "ros2", "llm", "robot"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Hardware",
+    "Topic :: Communications :: Chat",
+    "Topic :: Home Automation",
+]
+requires-python = ">=3.9"
+
+# Core has zero mandatory dependencies — uses only stdlib
+dependencies = []
+
+[project.optional-dependencies]
+# Raspberry Pi GPIO + I2C
+rpi = ["smbus2>=0.4", "RPi.GPIO>=0.7"]
+
+# ROS2 — install separately via ROS package manager; this just documents it
+ros2 = []
+
+# Development & testing
+dev = [
+    "pytest>=7",
+    "pytest-cov>=4",
+    "ruff>=0.3",
+    "mypy>=1.8",
+    "python-dotenv>=1.0",
+]
+
+# Docs
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9",
+    "mkdocstrings[python]>=0.24",
+]
+
+[project.scripts]
+wisp = "wisp.cli.main:main"
+
+[project.urls]
+Homepage    = "https://github.com/shaik-shahansha/wisp"
+Repository  = "https://github.com/shaik-shahansha/wisp"
+Issues      = "https://github.com/shaik-shahansha/wisp/issues"
+Changelog   = "https://github.com/shaik-shahansha/wisp/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["wisp*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.9"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

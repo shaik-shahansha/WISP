@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Plugins &amp; ROS2 — WISP</title>
+  <meta name="description" content="Extend WISP with plugins. Control ROS2 robots from Telegram with ROS2Plugin."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html" class="active">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link active">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Ecosystem</div>
+      <h1>Plugins &amp; ROS2</h1>
+      <p class="lead">Dynamically extend any device with capabilities at runtime. WISP ships with <code>ROS2Plugin</code> — a live ROS2 graph scanner that turns your robot into a Telegram-controlled agent.</p>
+    </header>
+
+    <section id="plugin-api">
+      <h2>Plugin API</h2>
+      <p>Every plugin subclasses <code>WispPlugin</code> and implements a single method — <code>attach(device)</code>. This method is called once when you call <code>device.use(plugin)</code>, before the transport starts.</p>
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispPlugin, WispDevice, CapabilitySpec
+
+<span class="kw">class</span> <span class="cl">WeatherPlugin</span>(WispPlugin):
+    <span class="kw">def</span> <span class="fn">attach</span>(<span class="bi">self</span>, device: WispDevice) <span class="op">-></span> <span class="bi">None</span>:
+        device.registry.register(CapabilitySpec(
+            name<span class="op">=</span><span class="st">"get_forecast"</span>,
+            description<span class="op">=</span><span class="st">"Get 3-day weather forecast for a city."</span>,
+            params<span class="op">=</span>{<span class="st">"city"</span>: {<span class="st">"type"</span>: <span class="st">"string"</span>}},
+            method<span class="op">=</span><span class="bi">self</span>._fetch,
+        ))
+
+    <span class="kw">def</span> <span class="fn">_fetch</span>(<span class="bi">self</span>, city: <span class="bi">str</span>) <span class="op">-></span> dict:
+        <span class="cm"># call your API here</span>
+        <span class="kw">return</span> {<span class="st">"city"</span>: city, <span class="st">"forecast"</span>: <span class="st">"sunny"</span>}</code></pre>
+      <p>Then attach it to any device:</p>
+<pre><code>device <span class="op">=</span> MyDevice.from_config(<span class="st">"config.json"</span>)
+device.use(<span class="fn">WeatherPlugin</span>())
+device.run()</code></pre>
+    </section>
+
+    <section id="ros2-plugin">
+      <h2>ROS2Plugin</h2>
+      <p><code>ROS2Plugin</code> makes any WISP device a natural-language interface for a ROS2 robot. It scans the live ROS2 graph at boot and registers capabilities for topics it recognises.</p>
+
+      <h3>Requirements</h3>
+      <ul>
+        <li>ROS2 (Humble or later) installed on the same machine</li>
+        <li><code>rclpy</code> importable (comes with ROS2 install)</li>
+        <li>Your robot's nodes running before WISP starts</li>
+      </ul>
+
+      <h3>Usage</h3>
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispDevice
+<span class="kw">from</span> wisp.plugins.ros2 <span class="kw">import</span> ROS2Plugin
+<span class="kw">import</span> rclpy
+
+rclpy.init()
+
+<span class="kw">class</span> <span class="cl">TurtleBot</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"turtlebot3"</span>
+    device_description <span class="op">=</span> <span class="st">"TurtleBot3 Burger mobile robot."</span>
+
+device <span class="op">=</span> TurtleBot.from_config(<span class="st">"config.json"</span>)
+device.use(<span class="fn">ROS2Plugin</span>())
+device.run()</code></pre>
+      <div class="callout callout-info">
+        <strong>Teleop example:</strong> Send "move forward" via Telegram — WISP routes it to <code>move_forward</code> capability → publishes a <code>geometry_msgs/Twist</code> on <code>/cmd_vel</code>.
+      </div>
+
+      <h3>Auto-discovered capabilities</h3>
+      <p>The plugin maps topic patterns to capability names:</p>
+      <table>
+        <thead><tr><th>Topic pattern</th><th>Capability</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>/cmd_vel</code></td><td><code>move_forward</code>, <code>move_backward</code>, <code>turn_left</code>, <code>turn_right</code>, <code>stop</code></td><td>Publishes Twist</td></tr>
+          <tr><td><code>/navigate_to_pose</code></td><td><code>navigate_to</code></td><td>Sends Nav2 goal</td></tr>
+          <tr><td><code>/scan</code></td><td><code>read_lidar</code></td><td>Reads one scan</td></tr>
+          <tr><td><code>/battery_state</code></td><td><code>battery_level</code></td><td>Reads battery</td></tr>
+          <tr><td><code>/camera/image_raw</code></td><td><code>capture_image</code></td><td>Grabs one frame</td></tr>
+          <tr><td><code>/imu</code></td><td><code>read_imu</code></td><td>Reads IMU data</td></tr>
+          <tr><td><code>/odom</code></td><td><code>get_position</code></td><td>Reads odometry</td></tr>
+        </tbody>
+      </table>
+      <p>The plugin only registers capabilities for topics that are currently <em>live</em> on the graph. If a topic isn't published, its capability is skipped.</p>
+
+      <h3>Custom topic map</h3>
+      <p>Override <code>TOPIC_MAP</code> in a subclass to add your robot's topics:</p>
+<pre><code><span class="kw">from</span> wisp.plugins.ros2 <span class="kw">import</span> ROS2Plugin
+
+<span class="kw">class</span> <span class="cl">MyRobotPlugin</span>(ROS2Plugin):
+    TOPIC_MAP <span class="op">=</span> ROS2Plugin.TOPIC_MAP <span class="op">+</span> [
+        {
+            <span class="st">"topic"</span>: <span class="st">"/gripper/command"</span>,
+            <span class="st">"capability"</span>: <span class="st">"open_gripper"</span>,
+            <span class="st">"description"</span>: <span class="st">"Open or close the gripper. state: open|close."</span>,
+            <span class="st">"msg_type"</span>: <span class="st">"std_msgs/Bool"</span>,
+        }
+    ]</code></pre>
+    </section>
+
+    <section id="custom-plugin">
+      <h2>Writing your own plugin</h2>
+      <p>Any Python capability — HTTP API, database, GPIO expander, CAN bus — can become a WISP plugin in minutes:</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <div class="step-title">Subclass WispPlugin</div>
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispPlugin, CapabilitySpec
+
+<span class="kw">class</span> <span class="cl">HomeAssistantPlugin</span>(WispPlugin):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, base_url: <span class="bi">str</span>, token: <span class="bi">str</span>):
+        <span class="bi">self</span>.base_url <span class="op">=</span> base_url
+        <span class="bi">self</span>.token <span class="op">=</span> token</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <div class="step-title">Implement attach()</div>
+<pre><code>    <span class="kw">def</span> <span class="fn">attach</span>(<span class="bi">self</span>, device) <span class="op">-></span> <span class="bi">None</span>:
+        device.registry.register(CapabilitySpec(
+            name<span class="op">=</span><span class="st">"toggle_light"</span>,
+            description<span class="op">=</span><span class="st">"Toggle a Home Assistant light. entity: light.name."</span>,
+            params<span class="op">=</span>{<span class="st">"entity"</span>: {<span class="st">"type"</span>: <span class="st">"string"</span>}},
+            method<span class="op">=</span><span class="bi">self</span>._toggle,
+        ))</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <div class="step-title">Implement the method</div>
+<pre><code>    <span class="kw">def</span> <span class="fn">_toggle</span>(<span class="bi">self</span>, entity: <span class="bi">str</span>) <span class="op">-></span> dict:
+        <span class="kw">import</span> urllib.request, json
+        url <span class="op">=</span> <span class="st">f"</span>{<span class="bi">self</span>.base_url}<span class="st">/api/services/light/toggle"</span>
+        data <span class="op">=</span> json.dumps({<span class="st">"entity_id"</span>: entity}).encode()
+        req <span class="op">=</span> urllib.request.Request(url, data<span class="op">=</span>data,
+              headers<span class="op">=</span>{<span class="st">"Authorization"</span>: <span class="st">f"Bearer </span>{<span class="bi">self</span>.token}<span class="st">"</span>})
+        urllib.request.urlopen(req)
+        <span class="kw">return</span> {<span class="st">"toggled"</span>: entity}</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-body">
+            <div class="step-title">Attach and run</div>
+<pre><code>device.use(HomeAssistantPlugin(
+    base_url<span class="op">=</span><span class="st">"http://homeassistant.local:8123"</span>,
+    token<span class="op">=</span><span class="st">"your_long_lived_token"</span>,
+))
+device.run()</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#plugin-api" class="toc-link">Plugin API</a>
+      <a href="#ros2-plugin" class="toc-link">ROS2Plugin</a>
+      <a href="#custom-plugin" class="toc-link">Custom plugin</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;"><a href="quickstart.html">Docs</a><a href="api.html">API</a><a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a></div>
+</footer>
+<script src="nav.js"></script>
+</body>
+</html>

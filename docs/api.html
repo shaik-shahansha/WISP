@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>API Reference — WISP</title>
+  <meta name="description" content="Full API reference for WispDevice, @capability, WispConfig, WispPlugin, transports, and hardware layers."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html" class="active">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link active">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Framework</div>
+      <h1>API Reference</h1>
+      <p class="lead">Complete reference for every public class and decorator in <code>wisp</code>.</p>
+    </header>
+
+    <!-- WispDevice -->
+    <section id="wispdevice">
+      <h2>WispDevice</h2>
+      <p>The base class for every WISP device. Subclass it, decorate methods with <code>@capability</code>, call <code>.run()</code>.</p>
+
+      <div class="api-entry" id="wispdevice-classattrs">
+        <div class="api-header">
+          <span class="api-kind">class</span>
+          <code>wisp.WispDevice</code>
+        </div>
+        <div class="api-body">
+          <p>Base class. Powered by <code>WispDeviceMeta</code> which auto-collects all <code>@capability</code>-decorated methods at class creation time.</p>
+          <table>
+            <thead><tr><th>Class attribute</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>device_name</code></td><td><code>str</code></td><td><strong>Required.</strong> Machine-readable identifier sent to the AI.</td></tr>
+              <tr><td><code>device_description</code></td><td><code>str</code></td><td>Optional description used to help the AI understand context.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-entry" id="from-config">
+        <div class="api-header">
+          <span class="api-kind">classmethod</span>
+          <code>WispDevice.from_config(path: str) → WispDevice</code>
+        </div>
+        <div class="api-body">
+          <p>Load a <code>WispConfig</code> from a JSON file and return an initialised device instance.</p>
+<pre><code>device <span class="op">=</span> MyDevice.from_config(<span class="st">"config.json"</span>)</code></pre>
+        </div>
+      </div>
+
+      <div class="api-entry" id="run">
+        <div class="api-header">
+          <span class="api-kind">method</span>
+          <code>device.run() → None</code>
+        </div>
+        <div class="api-body">
+          <p>Start the configured transport (Telegram, CLI, or HTTP). This call blocks the current thread.</p>
+          <p>The transport is read from <code>config.transport</code>. If the environment variable <code>WISP_TRANSPORT=cli</code> is set, the CLI transport overrides the config — useful for <code>wisp simulate</code>.</p>
+        </div>
+      </div>
+
+      <div class="api-entry" id="use">
+        <div class="api-header">
+          <span class="api-kind">method</span>
+          <code>device.use(plugin: WispPlugin) → WispDevice</code>
+        </div>
+        <div class="api-body">
+          <p>Attach a plugin to the device. Returns <code>self</code> for chaining.</p>
+<pre><code>device.use(<span class="fn">ROS2Plugin</span>()).use(<span class="fn">MyPlugin</span>())</code></pre>
+        </div>
+      </div>
+
+      <div class="api-entry" id="process-message">
+        <div class="api-header">
+          <span class="api-kind">method</span>
+          <code>device.process_message(text: str, user: str) → str</code>
+        </div>
+        <div class="api-body">
+          <p>The core pipeline: build grounded prompt → call AI → parse JSON → execute capability → format reply.</p>
+          <p>Used internally by all transports. You can call it directly in tests or custom integrations.</p>
+        </div>
+      </div>
+
+      <div class="api-entry" id="auto-discover">
+        <div class="api-header">
+          <span class="api-kind">method</span>
+          <code>device._auto_discover() → None</code>
+        </div>
+        <div class="api-body">
+          <p>Called at boot. Scans I2C bus and registers sensor capabilities automatically. Override if you want custom boot logic.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- capability -->
+    <section id="capability">
+      <h2>@capability</h2>
+      <p>Decorator that marks a method as an AI-callable capability.</p>
+
+      <div class="api-entry">
+        <div class="api-header">
+          <span class="api-kind">decorator</span>
+          <code>@wisp.capability</code>
+        </div>
+        <div class="api-body">
+          <p>Works bare or with arguments:</p>
+<pre><code><span class="cm"># Bare — name inferred from function name</span>
+<span class="fn">@capability</span>
+<span class="kw">def</span> <span class="fn">read_temperature</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+    <span class="st">"""Read temperature from BME280."""</span>
+    ...
+
+<span class="cm"># With args — override name or add tags</span>
+<span class="fn">@capability</span>(name=<span class="st">"temp"</span>, tags=[<span class="st">"sensors"</span>])
+<span class="kw">def</span> <span class="fn">read_temperature</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+    ...</code></pre>
+          <div class="callout callout-warn">
+            <strong>Docstring required.</strong> The docstring is injected into the AI system prompt. Without it, the AI won't understand what the capability does.
+          </div>
+          <h4>Return type</h4>
+          <p>Capability methods must return a <code>dict</code>. The dict is serialised to a human-readable string and sent back to the user.</p>
+          <h4>Parameters</h4>
+          <p>WISP inspects the function signature to extract parameter names and type hints. These are included in the AI schema so the AI knows what arguments to supply.</p>
+<pre><code><span class="fn">@capability</span>
+<span class="kw">def</span> <span class="fn">set_fan</span>(<span class="bi">self</span>, state: <span class="bi">str</span>, speed: <span class="bi">int</span> <span class="op">=</span> <span class="num">50</span>) <span class="op">-></span> dict:
+    <span class="st">"""Set the fan. state: 'on'|'off'. speed: 0-100."""</span>
+    ...</code></pre>
+        </div>
+      </div>
+
+      <div class="api-entry" id="capabilityspec">
+        <div class="api-header">
+          <span class="api-kind">class</span>
+          <code>wisp.core.capability.CapabilitySpec</code>
+        </div>
+        <div class="api-body">
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>name</code></td><td><code>str</code></td><td>Capability identifier, used as JSON <code>action</code> key.</td></tr>
+              <tr><td><code>description</code></td><td><code>str</code></td><td>Docstring from the decorated method.</td></tr>
+              <tr><td><code>params</code></td><td><code>dict</code></td><td>Inferred parameter schema.</td></tr>
+              <tr><td><code>method</code></td><td><code>callable</code></td><td>Reference to the original method.</td></tr>
+              <tr><td><code>tags</code></td><td><code>list[str]</code></td><td>Optional tag list for grouping.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- WispConfig -->
+    <section id="wispconfig">
+      <h2>WispConfig</h2>
+
+      <div class="api-entry">
+        <div class="api-header">
+          <span class="api-kind">dataclass</span>
+          <code>wisp.WispConfig</code>
+        </div>
+        <div class="api-body">
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>device_name</code></td><td><code>str</code></td><td>Device identifier</td></tr>
+              <tr><td><code>ai</code></td><td><code>AIConfig</code></td><td>AI provider settings</td></tr>
+              <tr><td><code>telegram</code></td><td><code>TelegramConfig | None</code></td><td>Telegram bot settings</td></tr>
+              <tr><td><code>hardware</code></td><td><code>HardwareConfig</code></td><td>I2C bus, GPIO, pins</td></tr>
+              <tr><td><code>transport</code></td><td><code>str</code></td><td><code>"telegram"</code>, <code>"cli"</code>, or <code>"http"</code></td></tr>
+            </tbody>
+          </table>
+<pre><code><span class="cm"># From file</span>
+cfg <span class="op">=</span> WispConfig.from_file(<span class="st">"config.json"</span>)
+
+<span class="cm"># From environment variables</span>
+cfg <span class="op">=</span> WispConfig.from_env()
+
+<span class="cm"># Merge both (env overrides file)</span>
+cfg <span class="op">=</span> WispConfig.from_file(<span class="st">"config.json"</span>).merge_env()</code></pre>
+          <h4>Environment variables</h4>
+          <table>
+            <thead><tr><th>Variable</th><th>Maps to</th></tr></thead>
+            <tbody>
+              <tr><td><code>WISP_AI_API_KEY</code></td><td><code>config.ai.api_key</code></td></tr>
+              <tr><td><code>WISP_AI_PROVIDER</code></td><td><code>config.ai.provider</code></td></tr>
+              <tr><td><code>WISP_AI_MODEL</code></td><td><code>config.ai.model</code></td></tr>
+              <tr><td><code>WISP_TELEGRAM_TOKEN</code></td><td><code>config.telegram.token</code></td></tr>
+              <tr><td><code>WISP_TRANSPORT</code></td><td><code>config.transport</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-entry">
+        <div class="api-header">
+          <span class="api-kind">dataclass</span>
+          <code>AIConfig</code>
+        </div>
+        <div class="api-body">
+          <table>
+            <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>provider</code></td><td><code>"groq"</code></td><td><code>"groq"</code> or <code>"openrouter"</code></td></tr>
+              <tr><td><code>api_key</code></td><td>—</td><td>Required</td></tr>
+              <tr><td><code>model</code></td><td><code>"llama-3.3-70b-versatile"</code></td><td>Any model supported by the provider</td></tr>
+              <tr><td><code>temperature</code></td><td><code>0.1</code></td><td>Low temperature for more deterministic routing</td></tr>
+              <tr><td><code>timeout</code></td><td><code>30</code></td><td>HTTP timeout in seconds</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- WispPlugin -->
+    <section id="wispplugin">
+      <h2>WispPlugin</h2>
+
+      <div class="api-entry">
+        <div class="api-header">
+          <span class="api-kind">abstract class</span>
+          <code>wisp.WispPlugin</code>
+        </div>
+        <div class="api-body">
+          <p>Base class for all plugins. Subclass and implement <code>attach()</code>.</p>
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispPlugin, WispDevice, CapabilitySpec
+
+<span class="kw">class</span> <span class="cl">MyPlugin</span>(WispPlugin):
+    <span class="kw">def</span> <span class="fn">attach</span>(<span class="bi">self</span>, device: WispDevice) <span class="op">-></span> <span class="bi">None</span>:
+        <span class="cm"># Register capabilities dynamically</span>
+        spec <span class="op">=</span> CapabilitySpec(
+            name<span class="op">=</span><span class="st">"ping"</span>,
+            description<span class="op">=</span><span class="st">"Ping the network."</span>,
+            method<span class="op">=</span><span class="bi">self</span>._do_ping,
+        )
+        device.registry.register(spec)
+
+    <span class="kw">def</span> <span class="fn">_do_ping</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="kw">return</span> {<span class="st">"ping"</span>: <span class="st">"pong"</span>}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Errors -->
+    <section id="errors">
+      <h2>Errors</h2>
+      <table>
+        <thead><tr><th>Exception</th><th>When raised</th></tr></thead>
+        <tbody>
+          <tr><td><code>WispError</code></td><td>Base for all WISP exceptions</td></tr>
+          <tr><td><code>ConfigurationError</code></td><td>Missing or invalid config values</td></tr>
+          <tr><td><code>HardwareError</code></td><td>I2C read/write failure or pin not found</td></tr>
+          <tr><td><code>AIError</code></td><td>API call failed (auth, network, quota)</td></tr>
+          <tr><td><code>TransportError</code></td><td>Telegram auth failure or HTTP bind error</td></tr>
+          <tr><td><code>CapabilityError</code></td><td>AI requested an unknown capability</td></tr>
+        </tbody>
+      </table>
+<pre><code><span class="kw">from</span> wisp.core.errors <span class="kw">import</span> HardwareError
+
+<span class="kw">try</span>:
+    result <span class="op">=</span> device.process_message(<span class="st">"read sensor"</span>, <span class="st">"user"</span>)
+<span class="kw">except</span> HardwareError <span class="kw">as</span> e:
+    print(<span class="st">f"Hardware failed: </span>{e}<span class="st">"</span>)</code></pre>
+    </section>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#wispdevice" class="toc-link">WispDevice</a>
+      <a href="#from-config" class="toc-link" style="padding-left:24px;">from_config()</a>
+      <a href="#run" class="toc-link" style="padding-left:24px;">run()</a>
+      <a href="#use" class="toc-link" style="padding-left:24px;">use()</a>
+      <a href="#process-message" class="toc-link" style="padding-left:24px;">process_message()</a>
+      <a href="#capability" class="toc-link">@capability</a>
+      <a href="#capabilityspec" class="toc-link" style="padding-left:24px;">CapabilitySpec</a>
+      <a href="#wispconfig" class="toc-link">WispConfig</a>
+      <a href="#wispplugin" class="toc-link">WispPlugin</a>
+      <a href="#errors" class="toc-link">Errors</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;"><a href="quickstart.html">Docs</a><a href="api.html">API</a><a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a><a href="https://pypi.org/project/wisp-ai/" target="_blank">PyPI</a></div>
+</footer>
+<script src="nav.js"></script>
+</body>
+</html>

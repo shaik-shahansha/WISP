@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Quickstart — WISP</title>
+  <meta name="description" content="Get a WISP device running in 5 minutes. Install, configure, and talk to your hardware."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand">
+    <div class="brand-logo">W</div>
+    WISP
+  </a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html" class="active">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link active">Quickstart</a>
+
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <!-- CONTENT -->
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Getting Started</div>
+      <h1>Quickstart</h1>
+      <p class="lead">Get a fully functional AI-driven device running in 5 minutes.</p>
+    </header>
+
+    <!-- PREREQUISITES -->
+    <section id="prerequisites">
+      <h2>Prerequisites</h2>
+      <p>You will need:</p>
+      <ul>
+        <li>Python 3.9 or higher (<code>python --version</code>)</li>
+        <li>A free <a href="https://t.me/BotFather" target="_blank">Telegram Bot token</a> from @BotFather</li>
+        <li>A free <a href="https://console.groq.com" target="_blank">Groq API key</a> (or OpenRouter)</li>
+        <li>Any device you want to control (or your laptop — mock mode works everywhere)</li>
+      </ul>
+      <div class="callout callout-info">
+        <strong>No hardware?</strong> WISP includes a full mock/desktop simulator. Run <code>wisp simulate</code> to test without any physical device.
+      </div>
+    </section>
+
+    <!-- STEP 1 -->
+    <section id="install">
+      <h2>Step 1 — Install WISP</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <div class="step-title">Install from PyPI</div>
+<pre><code><span class="prompt">$</span> pip install wisp-ai</code></pre>
+            <p>For Raspberry Pi, add the optional hardware extras:</p>
+<pre><code><span class="prompt">$</span> pip install "wisp-ai[rpi]"</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <div class="step-title">Verify installation</div>
+<pre><code><span class="prompt">$</span> wisp version
+WISP 0.1.0</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section id="scaffold">
+      <h2>Step 2 — Create a new project</h2>
+      <p>The <code>wisp new</code> command scaffolds a project with the right file layout:</p>
+<pre><code><span class="prompt">$</span> wisp new my_device
+<span class="out">Created project: my_device/</span>
+<span class="out">  my_device/device.py</span>
+<span class="out">  my_device/config.json</span></code></pre>
+      <p>You can also scaffold a sensors or ROS2 project:</p>
+<pre><code><span class="prompt">$</span> wisp new robot --template ros2</code></pre>
+      <div class="callout callout-tip">
+        <strong>Templates:</strong> <code>basic</code> (default), <code>sensors</code> (BME280 + BH1750), <code>ros2</code> (ROS2Plugin auto-attached).
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section id="configure">
+      <h2>Step 3 — Edit config.json</h2>
+      <p>Open <code>my_device/config.json</code> and fill in your API keys:</p>
+<pre><code>{
+  <span class="kw">"device_name"</span>: <span class="st">"my_device"</span>,
+  <span class="kw">"ai"</span>: {
+    <span class="kw">"provider"</span>: <span class="st">"groq"</span>,
+    <span class="kw">"api_key"</span>: <span class="st">"gsk_your_key_here"</span>,
+    <span class="kw">"model"</span>: <span class="st">"llama-3.3-70b-versatile"</span>
+  },
+  <span class="kw">"telegram"</span>: {
+    <span class="kw">"token"</span>: <span class="st">"123456:ABCdef..."</span>,
+    <span class="kw">"allowed_users"</span>: [<span class="st">"your_telegram_username"</span>]
+  }
+}</code></pre>
+      <div class="callout callout-warn">
+        <strong>Security:</strong> Never commit <code>config.json</code> to source control. Add it to <code>.gitignore</code>. You can use environment variables instead — WISP reads <code>WISP_AI_API_KEY</code>, <code>WISP_TELEGRAM_TOKEN</code>, etc.
+      </div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section id="write-device">
+      <h2>Step 4 — Write your device class</h2>
+      <p>Open <code>my_device/device.py</code>. The scaffold will already contain this pattern — customise it for your hardware:</p>
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispDevice, capability
+
+<span class="kw">class</span> <span class="cl">MyDevice</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"my_device"</span>
+    device_description <span class="op">=</span> <span class="st">"A smart device I control with Telegram."</span>
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">get_status</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="st">"""Return the device's current status."""</span>
+        <span class="kw">return</span> {<span class="st">"status"</span>: <span class="st">"online"</span>, <span class="st">"uptime"</span>: <span class="bi">self</span>.hardware.uptime()}
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">set_led</span>(<span class="bi">self</span>, state: <span class="bi">str</span>) <span class="op">-></span> dict:
+        <span class="st">"""Turn the LED on or off. state: 'on' | 'off'."""</span>
+        <span class="bi">self</span>.hardware.set_output(<span class="st">"led"</span>, state <span class="op">==</span> <span class="st">"on"</span>)
+        <span class="kw">return</span> {<span class="st">"led"</span>: state}
+
+
+<span class="kw">if</span> __name__ <span class="op">==</span> <span class="st">"__main__"</span>:
+    device <span class="op">=</span> MyDevice.from_config(<span class="st">"config.json"</span>)
+    device.run()</code></pre>
+      <div class="callout callout-info">
+        <strong>Key rule:</strong> Every method decorated with <code>@capability</code> must have a <strong>docstring</strong>. The docstring is what the AI reads to understand what the capability does.
+      </div>
+    </section>
+
+    <!-- STEP 5 -->
+    <section id="run">
+      <h2>Step 5 — Run it</h2>
+      <p>For quick testing without Telegram, use the interactive simulator:</p>
+<pre><code><span class="prompt">$</span> cd my_device
+<span class="prompt">$</span> wisp simulate
+<span class="out">WISP 0.1.0  [simulator mode]</span>
+<span class="out">Device: my_device</span>
+<span class="out">Capabilities (2): get_status, set_led</span>
+<span class="out">Type a message or 'quit' to exit.</span>
+<span class="out">&gt;&gt;&gt;</span> what is the status?
+<span class="out">✅  status: online, uptime: 42</span>
+<span class="out">&gt;&gt;&gt;</span> turn on the led
+<span class="out">✅  led: on</span></code></pre>
+      <p>When ready, deploy for real:</p>
+<pre><code><span class="prompt">$</span> wisp run</code></pre>
+      <p>This starts the Telegram long-poll loop. Your bot is now live and talking to your hardware.</p>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section id="next-steps">
+      <h2>Next steps</h2>
+      <div class="card-grid" style="margin-top:0;">
+        <div class="feature-card">
+          <div class="icon">🔌</div>
+          <h3><a href="hardware.html">Connect sensors</a></h3>
+          <p>Wire up I2C sensors — WISP auto-discovers BME280, BH1750, SHT31, MPU6050, and SSD1306.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🤖</div>
+          <h3><a href="plugins.html">Add ROS2</a></h3>
+          <p>Attach <code>ROS2Plugin</code> to any device and control robots from Telegram — movement, sensors, navigation.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📖</div>
+          <h3><a href="api.html">Full API reference</a></h3>
+          <p>Explore all methods, config options, and extension points in the complete API docs.</p>
+        </div>
+      </div>
+    </section>
+
+  </article>
+
+  <!-- TOC -->
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#prerequisites" class="toc-link">Prerequisites</a>
+      <a href="#install" class="toc-link">Step 1 — Install</a>
+      <a href="#scaffold" class="toc-link">Step 2 — Scaffold</a>
+      <a href="#configure" class="toc-link">Step 3 — Configure</a>
+      <a href="#write-device" class="toc-link">Step 4 — Write device</a>
+      <a href="#run" class="toc-link">Step 5 — Run</a>
+      <a href="#next-steps" class="toc-link">Next steps</a>
+    </nav>
+  </aside>
+
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;">
+    <a href="quickstart.html">Docs</a>
+    <a href="api.html">API</a>
+    <a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/wisp-ai/" target="_blank">PyPI</a>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

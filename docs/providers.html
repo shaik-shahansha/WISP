@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>AI Providers — WISP</title>
+  <meta name="description" content="Compare Groq and OpenRouter for WISP. API keys, models, rate limits, config examples."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link active">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Ecosystem</div>
+      <h1>AI Providers</h1>
+      <p class="lead">WISP works with Groq and OpenRouter out of the box. Both offer <strong>free tiers</strong> — no credit card needed to get started.</p>
+    </header>
+
+    <section id="comparison">
+      <h2>Quick comparison</h2>
+      <table>
+        <thead><tr><th>Feature</th><th>Groq</th><th>OpenRouter</th></tr></thead>
+        <tbody>
+          <tr><td>Free tier</td><td>✅ Yes — generous RPM/RPD</td><td>✅ Yes — several free models</td></tr>
+          <tr><td>Default model</td><td><code>llama-3.3-70b-versatile</code></td><td><code>meta-llama/llama-3.3-70b-instruct:free</code></td></tr>
+          <tr><td>Latency</td><td>Very fast (~200 ms)</td><td>Varies by model</td></tr>
+          <tr><td>Model selection</td><td>Groq-hosted only</td><td>100+ models</td></tr>
+          <tr><td>API compatibility</td><td>OpenAI-compatible</td><td>OpenAI-compatible</td></tr>
+          <tr><td>Sign-up URL</td><td><a href="https://console.groq.com" target="_blank">console.groq.com</a></td><td><a href="https://openrouter.ai" target="_blank">openrouter.ai</a></td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-tip">
+        <strong>Recommendation:</strong> Start with Groq. It's the fastest and simplest to set up. Switch to OpenRouter if you want to experiment with other models.
+      </div>
+    </section>
+
+    <section id="groq">
+      <h2>Groq</h2>
+      <p>Groq delivers inference on custom LPU hardware. The free tier is extremely fast — most WISP commands complete in under 500 ms end-to-end.</p>
+
+      <h3>Setup</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <div class="step-title">Create a free account</div>
+            <p>Go to <a href="https://console.groq.com" target="_blank">console.groq.com</a> and sign up. No credit card required.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <div class="step-title">Create an API key</div>
+            <p>Click <strong>API Keys → Create API Key</strong>. Copy the key starting with <code>gsk_</code>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <div class="step-title">Add to config.json</div>
+<pre><code>{
+  <span class="kw">"ai"</span>: {
+    <span class="kw">"provider"</span>: <span class="st">"groq"</span>,
+    <span class="kw">"api_key"</span>: <span class="st">"gsk_your_key_here"</span>,
+    <span class="kw">"model"</span>: <span class="st">"llama-3.3-70b-versatile"</span>
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <h3>Available models</h3>
+      <table>
+        <thead><tr><th>Model</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>llama-3.3-70b-versatile</code></td><td>Default. Best for routing commands accurately.</td></tr>
+          <tr><td><code>llama-3.1-8b-instant</code></td><td>Faster, lower latency. Good for simple devices.</td></tr>
+          <tr><td><code>mixtral-8x7b-32768</code></td><td>Longer context. Useful if you have many capabilities.</td></tr>
+          <tr><td><code>gemma2-9b-it</code></td><td>Google's Gemma 2. Good alternative.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Rate limits (free tier)</h3>
+      <table>
+        <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Requests per minute</td><td>30 RPM</td></tr>
+          <tr><td>Requests per day</td><td>14,400 RPD</td></tr>
+          <tr><td>Tokens per minute</td><td>6,000 TPM</td></tr>
+        </tbody>
+      </table>
+      <p>WISP sends very short grounded prompts — each command typically uses fewer than 300 tokens. The free tier is more than enough for personal devices.</p>
+    </section>
+
+    <section id="openrouter">
+      <h2>OpenRouter</h2>
+      <p>OpenRouter aggregates hundreds of AI models behind a single OpenAI-compatible API. Use it to access models not available on Groq.</p>
+
+      <h3>Setup</h3>
+<pre><code>{
+  <span class="kw">"ai"</span>: {
+    <span class="kw">"provider"</span>: <span class="st">"openrouter"</span>,
+    <span class="kw">"api_key"</span>: <span class="st">"sk-or-v1-your-key"</span>,
+    <span class="kw">"model"</span>: <span class="st">"meta-llama/llama-3.3-70b-instruct:free"</span>
+  }
+}</code></pre>
+
+      <h3>Free models</h3>
+      <table>
+        <thead><tr><th>Model ID</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>meta-llama/llama-3.3-70b-instruct:free</code></td><td>Best free model for command routing</td></tr>
+          <tr><td><code>mistralai/mistral-7b-instruct:free</code></td><td>Fast, lightweight</td></tr>
+          <tr><td><code>google/gemma-2-9b-it:free</code></td><td>Google Gemma 2</td></tr>
+          <tr><td><code>qwen/qwen-2.5-7b-instruct:free</code></td><td>Strong multilingual support</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-warn">
+        <strong>Note:</strong> Free models on OpenRouter may have <em>rate limits</em> or <em>context limits</em>. If WISP fails with a 429 or 400 error, try a different model.
+      </div>
+    </section>
+
+    <section id="custom-provider">
+      <h2>Custom AI provider</h2>
+      <p>Implement the <code>AIProvider</code> interface to integrate any LLM:</p>
+<pre><code><span class="kw">from</span> wisp.ai.providers <span class="kw">import</span> AIProvider
+
+<span class="kw">class</span> <span class="cl">OllamaProvider</span>(AIProvider):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, model: <span class="bi">str</span> <span class="op">=</span> <span class="st">"llama3.2"</span>):
+        <span class="bi">self</span>.model <span class="op">=</span> model
+
+    <span class="kw">def</span> <span class="fn">complete</span>(<span class="bi">self</span>, system: <span class="bi">str</span>, user: <span class="bi">str</span>) <span class="op">-></span> <span class="bi">str</span>:
+        <span class="kw">import</span> urllib.request, json
+        payload <span class="op">=</span> {
+            <span class="st">"model"</span>: <span class="bi">self</span>.model,
+            <span class="st">"messages"</span>: [
+                {<span class="st">"role"</span>: <span class="st">"system"</span>, <span class="st">"content"</span>: system},
+                {<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: user},
+            ],
+            <span class="st">"stream"</span>: <span class="bi">False</span>,
+        }
+        req <span class="op">=</span> urllib.request.Request(
+            <span class="st">"http://localhost:11434/api/chat"</span>,
+            data<span class="op">=</span>json.dumps(payload).encode(),
+            headers<span class="op">=</span>{<span class="st">"Content-Type"</span>: <span class="st">"application/json"</span>},
+        )
+        resp <span class="op">=</span> json.loads(urllib.request.urlopen(req).read())
+        <span class="kw">return</span> resp[<span class="st">"message"</span>][<span class="st">"content"</span>]</code></pre>
+      <p>Then pass it to the AI client when constructing your device — or open a GitHub issue to propose it as a built-in provider.</p>
+    </section>
+
+    <section id="grounding">
+      <h2>How grounding works</h2>
+      <p>Every prompt sent to the AI contains a <strong>live, exact list</strong> of capabilities the device has right now. The AI cannot invent capabilities that aren't in the list.</p>
+<pre><code><span class="cm">System prompt sent to the model:</span>
+
+You are the AI controller for a device called "smart_home".
+The device can only perform the following actions (JSON list):
+
+[
+  {"action": "read_temperature", "description": "Read temperature and humidity.", "params": {}},
+  {"action": "set_fan",          "description": "Turn fan on or off.",            "params": {"state": "string"}},
+  {"action": "set_led",          "description": "Set LED brightness 0-100.",       "params": {"brightness": "int"}}
+]
+
+Respond ONLY with a JSON object:
+{"action": "&lt;action_name&gt;", "params": {}}
+
+If the user's request cannot be fulfilled, respond:
+{"action": "error", "message": "No capability for: &lt;request&gt;"}</code></pre>
+      <p>This grounding is the core anti-hallucination mechanism. No fine-tuning, no prompt engineering required on your part.</p>
+    </section>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#comparison" class="toc-link">Comparison</a>
+      <a href="#groq" class="toc-link">Groq</a>
+      <a href="#openrouter" class="toc-link">OpenRouter</a>
+      <a href="#custom-provider" class="toc-link">Custom provider</a>
+      <a href="#grounding" class="toc-link">How grounding works</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;"><a href="quickstart.html">Docs</a><a href="api.html">API</a><a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a></div>
+</footer>
+<script src="nav.js"></script>
+</body>
+</html>

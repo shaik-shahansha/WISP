@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Hardware — WISP</title>
+  <meta name="description" content="I2C auto-discovery, sensor drivers, HAL platform detection, and GPIO in WISP."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html" class="active">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link active">Hardware</a>
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Framework</div>
+      <h1>Hardware</h1>
+      <p class="lead">WISP abstracts hardware through a HAL (Hardware Abstraction Layer) and auto-discovers I2C sensors at boot.</p>
+    </header>
+
+    <section id="hal">
+      <h2>Hardware Abstraction Layer</h2>
+      <p>The HAL (<code>wisp.hardware.hal.HardwareLayer</code>) auto-detects the platform at startup:</p>
+      <table>
+        <thead><tr><th>Detection order</th><th>Condition</th><th>Backend</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>sys.implementation.name == "micropython"</code></td><td>MicroPython <code>machine.I2C</code></td></tr>
+          <tr><td>2</td><td><code>/proc/cpuinfo</code> contains <code>Raspberry Pi</code></td><td><code>smbus2</code> (install with <code>wisp-ai[rpi]</code>)</td></tr>
+          <tr><td>3</td><td>Anything else (laptop, CI, …)</td><td>Mock — returns empty bytes, no errors</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-info">
+        <strong>Mock mode</strong> lets you develop and test capabilities on any laptop without real hardware. All sensor reads return zero values and all GPIO writes are silently ignored.
+      </div>
+
+      <h3>HAL API</h3>
+<pre><code><span class="cm"># Access hardware through self.hardware inside a WispDevice</span>
+hal <span class="op">=</span> <span class="bi">self</span>.hardware
+
+<span class="cm"># I2C read/write</span>
+data <span class="op">=</span> hal.i2c_read_register(addr<span class="op">=</span><span class="num">0x76</span>, reg<span class="op">=</span><span class="num">0xF3</span>, length<span class="op">=</span><span class="num">2</span>)
+hal.i2c_write_register(addr<span class="op">=</span><span class="num">0x76</span>, reg<span class="op">=</span><span class="num">0xF4</span>, data<span class="op">=</span><span class="bi">bytes</span>([<span class="num">0xB7</span>]))
+
+<span class="cm"># GPIO (Raspberry Pi only; noop on other platforms)</span>
+hal.set_output(<span class="st">"fan"</span>, <span class="bi">True</span>)
+state <span class="op">=</span> hal.get_output(<span class="st">"fan"</span>)   <span class="cm"># True / False</span>
+all_states <span class="op">=</span> hal.output_states()  <span class="cm"># {"fan": True, "led": False}</span>
+
+<span class="cm"># Sensor instance (auto-discovered)</span>
+bme <span class="op">=</span> hal.sensor(<span class="st">"bme280"</span>)
+print(bme.temperature, bme.humidity, bme.pressure)</code></pre>
+    </section>
+
+    <section id="i2c-config">
+      <h2>I2C configuration</h2>
+      <p>Configure bus and pins in <code>config.json</code> under <code>"hardware"</code>:</p>
+<pre><code>{
+  <span class="kw">"hardware"</span>: {
+    <span class="kw">"i2c_bus"</span>: <span class="num">1</span>,
+    <span class="kw">"sda_pin"</span>: <span class="num">21</span>,
+    <span class="kw">"scl_pin"</span>: <span class="num">22</span>,
+    <span class="kw">"gpio_outputs"</span>: {
+      <span class="kw">"fan"</span>: <span class="num">5</span>,
+      <span class="kw">"led"</span>: <span class="num">18</span>
+    }
+  }
+}</code></pre>
+      <div class="callout callout-tip">
+        <strong>Platform defaults:</strong> On Raspberry Pi the bus defaults to <code>1</code> (pins 3/5). On ESP32 you must specify <code>sda_pin</code> and <code>scl_pin</code>.
+      </div>
+    </section>
+
+    <section id="auto-discovery">
+      <h2>I2C auto-discovery</h2>
+      <p>At boot, <code>I2CScanner</code> probes all I2C addresses and matches them against a built-in lookup table. Matched sensors are instantiated and registered as capabilities automatically — no extra code needed.</p>
+
+      <h3>Supported sensors</h3>
+      <table>
+        <thead><tr><th>Sensor</th><th>Default address</th><th>Capability name</th><th>Data returned</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>BME280</strong></td><td><code>0x76</code> / <code>0x77</code></td>
+            <td><code>read_bme280</code></td>
+            <td><code>temperature</code>, <code>humidity</code>, <code>pressure</code></td>
+          </tr>
+          <tr>
+            <td><strong>BH1750</strong></td><td><code>0x23</code> / <code>0x5C</code></td>
+            <td><code>read_bh1750</code></td>
+            <td><code>lux</code></td>
+          </tr>
+          <tr>
+            <td><strong>SHT31</strong></td><td><code>0x44</code> / <code>0x45</code></td>
+            <td><code>read_sht31</code></td>
+            <td><code>temperature</code>, <code>humidity</code></td>
+          </tr>
+          <tr>
+            <td><strong>MPU6050</strong></td><td><code>0x68</code> / <code>0x69</code></td>
+            <td><code>read_mpu6050</code></td>
+            <td><code>ax</code>, <code>ay</code>, <code>az</code>, <code>gx</code>, <code>gy</code>, <code>gz</code></td>
+          </tr>
+          <tr>
+            <td><strong>SSD1306</strong></td><td><code>0x3C</code> / <code>0x3D</code></td>
+            <td><code>display_text</code></td>
+            <td>OLED — writes text to display</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Wiring guide</h3>
+<pre style="line-height:1.5;"><code><span class="cm">ESP32 ─── BME280</span>
+  3V3 ──── VCC
+  GND ──── GND
+  GPIO21 ─ SDA
+  GPIO22 ─ SCL
+
+<span class="cm">Raspberry Pi ─── BME280</span>
+  3V3     ──── VCC
+  GND     ──── GND
+  GPIO2 (SDA) ─ SDA
+  GPIO3 (SCL) ─ SCL</code></pre>
+      <p>All other supported sensors (BH1750, SHT31, MPU6050, SSD1306) wire identically — VCC / GND / SDA / SCL to the same pins.</p>
+    </section>
+
+    <section id="custom-sensors">
+      <h2>Custom sensor drivers</h2>
+      <p>If your sensor is not in the built-in list, write a driver and add it to the scanner lookup table:</p>
+<pre><code><span class="kw">from</span> wisp.hardware.hal <span class="kw">import</span> HardwareLayer
+
+<span class="kw">class</span> <span class="cl">MyDAC</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, hal: HardwareLayer, addr: <span class="bi">int</span>):
+        <span class="bi">self</span>.hal <span class="op">=</span> hal
+        <span class="bi">self</span>.addr <span class="op">=</span> addr
+
+    <span class="kw">def</span> <span class="fn">set_voltage</span>(<span class="bi">self</span>, mv: <span class="bi">int</span>) <span class="op">-></span> <span class="bi">None</span>:
+        hi <span class="op">=</span> (mv <span class="op">&gt;&gt;</span> <span class="num">8</span>) <span class="op">&amp;</span> <span class="num">0x0F</span>
+        lo <span class="op">=</span> mv <span class="op">&amp;</span> <span class="num">0xFF</span>
+        <span class="bi">self</span>.hal.i2c_write_register(<span class="bi">self</span>.addr, <span class="num">0x40</span>, <span class="bi">bytes</span>([hi, lo]))</code></pre>
+      <p>Then register it manually in your device's <code>__init__</code> or <code>_auto_discover</code> override.</p>
+    </section>
+
+    <section id="platforms">
+      <h2>Platform notes</h2>
+      <div class="card-grid">
+        <div class="feature-card">
+          <div class="icon">🔲</div>
+          <h3>ESP32</h3>
+          <p>Flash MicroPython 1.21+ and copy the <code>device/</code> folder with <code>mpremote</code>. Use <code>config.json</code> for WiFi credentials.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🍓</div>
+          <h3>Raspberry Pi</h3>
+          <p>Enable I2C with <code>raspi-config</code>, then install <code>pip install "wisp-ai[rpi]"</code>. GPIO via <code>RPi.GPIO</code>.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💻</div>
+          <h3>Desktop / CI</h3>
+          <p>HAL falls back to mock mode. All sensor reads return zeros. GPIO calls are silently ignored. Tests run everywhere.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🤖</div>
+          <h3>ROS2 Robot</h3>
+          <p>Hardware is ROS2 topics, not I2C. Use <code>ROS2Plugin</code> instead of direct HAL access — it maps topics to capabilities.</p>
+        </div>
+      </div>
+    </section>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#hal" class="toc-link">HAL</a>
+      <a href="#i2c-config" class="toc-link">I2C config</a>
+      <a href="#auto-discovery" class="toc-link">Auto-discovery</a>
+      <a href="#custom-sensors" class="toc-link">Custom sensors</a>
+      <a href="#platforms" class="toc-link">Platforms</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;"><a href="quickstart.html">Docs</a><a href="api.html">API</a><a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a></div>
+</footer>
+<script src="nav.js"></script>
+</body>
+</html>

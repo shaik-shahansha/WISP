@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>WISP — Natural Language Remote Control for Devices</title>
+  <meta name="description" content="The Python framework that gives any device a voice. Control ESP32, Raspberry Pi, and ROS2 robots with natural language via Telegram."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+  <style>
+    /* Landing-page only: no sidebar layout */
+    .landing { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+    .full-hero { padding: 80px 0 64px; text-align: center; }
+    .full-hero h1 { font-size: 4rem; }
+    .section { padding: 64px 0; border-top: 1px solid var(--border); }
+    .section-header { text-align: center; margin-bottom: 48px; }
+    .section-header h2 { font-size: 2rem; border: none; margin: 0 0 12px; padding: 0; }
+    .section-header p { color: var(--text-muted); font-size: 1.05rem; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+    .split-text h2 { border: none; margin: 0 0 16px; padding: 0; font-size: 1.6rem; }
+    .stat-row { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; padding: 48px 0; border-top: 1px solid var(--border); }
+    .stat { text-align: center; }
+    .stat-val { font-size: 2.4rem; font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+    @media (max-width: 800px) { .split { grid-template-columns: 1fr; } .full-hero h1 { font-size: 2.5rem; } }
+    @media (max-width: 600px) { .landing { padding: 0 16px; } .full-hero { padding: 48px 0 40px; } .full-hero h1 { font-size: 2rem; } }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand">
+    <div class="brand-logo">W</div>
+    WISP
+  </a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div class="topbar-actions" style="margin-left:auto;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+
+<!-- Overlay for mobile sidebar -->
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+
+<main>
+<div class="landing">
+
+  <!-- HERO -->
+  <section class="full-hero">
+    <div class="hero-eyebrow">Open Source Framework · pip install wisp-ai</div>
+    <h1>
+      Natural language remote control<br/>
+      <span>for physical devices.</span>
+    </h1>
+    <p class="tagline" style="font-size:1.2rem;color:var(--text-muted);max-width:620px;margin:0 auto 32px;line-height:1.8;">
+      Give any device a voice — ESP32, Raspberry Pi, and ROS2 robots.
+      Describe what your device can do. WISP handles the rest.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="quickstart.html" style="padding:12px 28px;font-size:1rem;">Get started in 5 minutes →</a>
+      <a class="btn btn-ghost" href="api.html" style="padding:12px 28px;font-size:1rem;">API reference</a>
+    </div>
+
+    <!-- Install strip -->
+    <div style="display:inline-flex;align-items:center;gap:12px;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 20px;font-family:var(--font-mono);font-size:0.9rem;color:var(--text-muted);margin-bottom:48px;">
+      <span style="color:var(--accent2);">$</span>
+      <span>pip install wisp-ai</span>
+      <span style="color:var(--text-dim);">·</span>
+      <span style="color:var(--text-dim);">zero dependencies</span>
+    </div>
+
+    <!-- Code demo tabs -->
+    <div class="hero-code" style="max-width:760px;margin:0 auto;">
+      <div class="hero-code-tabs">
+        <div class="hct active" data-target="#pane-device">device.py</div>
+        <div class="hct" data-target="#pane-chat">Telegram conversation</div>
+        <div class="hct" data-target="#pane-ros2">ROS2 robot</div>
+      </div>
+
+      <!-- Pane 1 — device.py -->
+      <div id="pane-device" class="hero-pane active" style="padding:24px;">
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispDevice, capability
+
+<span class="kw">class</span> <span class="cl">SmartHome</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"smart_home"</span>
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">read_temperature</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="st">"""Read the current temperature."""</span>
+        sensor <span class="op">=</span> <span class="bi">self</span>.hardware.sensor(<span class="st">"bme280"</span>)
+        <span class="kw">return</span> {<span class="st">"temperature"</span>: sensor.temperature, <span class="st">"unit"</span>: <span class="st">"C"</span>}
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">set_fan</span>(<span class="bi">self</span>, state: <span class="bi">str</span>) <span class="op">-></span> dict:
+        <span class="st">"""Turn the fan relay on or off."""</span>
+        <span class="bi">self</span>.hardware.set_output(<span class="st">"fan"</span>, state <span class="op">==</span> <span class="st">"on"</span>)
+        <span class="kw">return</span> {<span class="st">"fan"</span>: state}
+
+device <span class="op">=</span> SmartHome.from_config(<span class="st">"config.json"</span>)
+device.run()  <span class="cm"># starts Telegram bot</span></code></pre>
+      </div>
+
+      <!-- Pane 2 — Chat -->
+      <div id="pane-chat" class="hero-pane" style="padding:24px;">
+        <div class="console" style="margin:0;">
+          <div class="chat-line chat-you"><span class="who">You:</span><span>what is the temperature?</span></div>
+          <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>🌡 temperature: 24.30<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unit: C</span></div>
+          <div style="margin:12px 0;"></div>
+          <div class="chat-line chat-you"><span class="who">You:</span><span>turn on the fan</span></div>
+          <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>✅ fan: on</span></div>
+          <div style="margin:12px 0;"></div>
+          <div class="chat-line chat-you"><span class="who">You:</span><span>take a photo</span></div>
+          <div class="chat-line chat-err"><span class="who">WISP:</span><span>❌ No camera capability. I have: read_temperature, set_fan</span></div>
+        </div>
+      </div>
+
+      <!-- Pane 3 — ROS2 -->
+      <div id="pane-ros2" class="hero-pane" style="padding:24px;">
+<pre><code><span class="kw">from</span> wisp <span class="kw">import</span> WispDevice
+<span class="kw">from</span> wisp.plugins.ros2 <span class="kw">import</span> ROS2Plugin
+
+<span class="kw">class</span> <span class="cl">MyRobot</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"turtlebot3"</span>
+
+device <span class="op">=</span> MyRobot.from_config(<span class="st">"config.json"</span>)
+device.use(<span class="fn">ROS2Plugin</span>())  <span class="cm"># scans live ROS2 graph</span>
+device.run()            <span class="cm"># auto-discovers: movement, lidar, battery…</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val">0</div><div class="stat-label">mandatory dependencies</div></div>
+    <div class="stat"><div class="stat-val">4</div><div class="stat-label">supported platforms</div></div>
+    <div class="stat"><div class="stat-val">3</div><div class="stat-label">transports (Telegram / CLI / HTTP)</div></div>
+    <div class="stat"><div class="stat-val">5</div><div class="stat-label">auto-detected sensor drivers</div></div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-header">
+      <h2>Everything you need. Nothing you don't.</h2>
+      <p>One base class. One decorator. Deploy anywhere Python runs.</p>
+    </div>
+    <div class="card-grid">
+      <div class="feature-card">
+        <div class="icon">🎯</div>
+        <h3>Grounded AI</h3>
+        <p>The AI only sees capabilities <em>you</em> define. It can never hallucinate a sensor that isn't wired up.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚡️</div>
+        <h3>Zero dependencies</h3>
+        <p>Core uses Python stdlib only. Install <code>wisp-ai</code> and start. No numpy, no frameworks, no surprises.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔌</div>
+        <h3>Any hardware</h3>
+        <p>ESP32, Pico W, Raspberry Pi, ROS2 Robot — same framework, same API, different config.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🤖</div>
+        <h3>I2C auto-discovery</h3>
+        <p>Wire a BME280 or BH1750, boot WISP — sensors become capabilities automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">💬</div>
+        <h3>Telegram transport</h3>
+        <p>Control your device from any phone, worldwide. No app required — just your existing Telegram.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔧</div>
+        <h3>Plugin system</h3>
+        <p>Extend any device with <code>device.use(MyPlugin())</code>. ROS2, weather APIs, custom databases — all welcome.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="split">
+      <div class="split-text">
+        <h2>Simple concept. Powerful result.</h2>
+        <p class="lead">You describe what your device can do. WISP tells the AI. The AI translates natural language into a hardware action.</p>
+        <p>No custom NLP. No training. No server. The AI is grounded in a live list of real capabilities at every request.</p>
+        <ul style="color:var(--text-muted);font-size:0.95rem;margin-top:16px;">
+          <li>Capabilities auto-discovered from I2C or ROS2 graph at boot</li>
+          <li>AI returns a structured JSON command every time</li>
+          <li>WISP executes the command on real hardware</li>
+          <li>Result is formatted and sent back to the user</li>
+        </ul>
+        <div style="margin-top:24px;">
+          <a href="quickstart.html" class="btn btn-primary">Build your first device →</a>
+        </div>
+      </div>
+      <div>
+        <div class="console">
+          <div><span class="prompt">$</span> <span class="cmd">wisp run</span></div>
+          <div class="out">WISP 0.1.0 booting  (device=smart_home  transport=telegram)</div>
+          <div class="out">  Discovered sensor: bme280  @ 0x76</div>
+          <div class="out">  Discovered sensor: bh1750  @ 0x23</div>
+          <div class="out">  GPIO output: fan  (pin 5)</div>
+          <div class="out">  GPIO output: led  (pin 18)</div>
+          <div class="out">Capabilities (5): read_bme280, read_bh1750,</div>
+          <div class="out">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set_fan, set_led, status</div>
+          <div class="out">Telegram bot: @my_device_bot  (ready)</div>
+          <div style="margin:8px 0;border-top:1px solid var(--border);"></div>
+          <div class="chat-line chat-you" style="margin-bottom:8px;"><span class="who">You:</span><span>is it hot in here?</span></div>
+          <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>🌡 temperature: 28.40<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;💧 humidity: 71.20</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATFORMS -->
+  <section class="section">
+    <div class="section-header">
+      <h2>Every platform. One framework.</h2>
+      <p>Write your capabilities once. Run on any supported hardware.</p>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Platform</th><th>Runtime</th><th>Discovery</th><th>Install</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ESP32</strong></td>
+          <td>MicroPython 1.21+</td>
+          <td>I2C bus scan</td>
+          <td><code>mpremote cp -r device/. :</code></td>
+        </tr>
+        <tr>
+          <td><strong>Raspberry Pi Pico W</strong></td>
+          <td>MicroPython 1.21+</td>
+          <td>I2C bus scan</td>
+          <td><code>mpremote cp -r device/. :</code></td>
+        </tr>
+        <tr>
+          <td><strong>Raspberry Pi</strong></td>
+          <td>Python 3.9+</td>
+          <td>I2C via smbus2</td>
+          <td><code>pip install "wisp-ai[rpi]"</code></td>
+        </tr>
+        <tr>
+          <td><strong>ROS2 Robot</strong></td>
+          <td>Python 3.9+ + rclpy</td>
+          <td>Live ROS2 graph</td>
+          <td><code>pip install wisp-ai</code></td>
+        </tr>
+        <tr>
+          <td><strong>Any Linux / macOS</strong></td>
+          <td>Python 3.9+</td>
+          <td>Custom / mock</td>
+          <td><code>pip install wisp-ai</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" style="text-align:center;border-bottom:none;">
+    <h2 style="border:none;padding:0;margin:0 0 16px;font-size:2rem;">Ready to give your device a voice?</h2>
+    <p style="color:var(--text-muted);font-size:1.05rem;margin-bottom:32px;">Get running in 5 minutes. Free Telegram bot. Free AI API key. No server needed.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a class="btn btn-primary" href="quickstart.html" style="padding:12px 28px;font-size:1rem;">Start building →</a>
+      <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank" style="padding:12px 28px;font-size:1rem;">View on GitHub</a>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;">
+    <a href="quickstart.html">Docs</a>
+    <a href="api.html">API</a>
+    <a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/wisp-ai/" target="_blank">PyPI</a>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Examples — WISP</title>
+  <meta name="description" content="Full WISP project examples: smart home, weather station, ROS2 robot."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html" class="active">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link active">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Ecosystem</div>
+      <h1>Examples</h1>
+      <p class="lead">Three complete projects you can clone and run today. All available in <code>framework/examples/</code>.</p>
+    </header>
+
+    <!-- Example 1 -->
+    <section id="smart-home">
+      <h2>Smart Home Controller</h2>
+      <p>An ESP32 or Raspberry Pi with a BME280 sensor, light relay, and fan relay. Control everything from Telegram with natural language.</p>
+      <div class="console" style="margin-bottom:16px;">
+        <div class="chat-line chat-you"><span class="who">You:</span><span>is it too hot? turn on the fan if needed</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>🌡 temperature: 29.4 °C — that's warm. Turning fan on.<br>✅ fan: on</span></div>
+        <div class="chat-line chat-you"><span class="who">You:</span><span>dim the lights to 30%</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>✅ led_brightness: 30</span></div>
+      </div>
+
+<pre><code><span class="cm"># examples/smart_home/main.py</span>
+<span class="kw">from</span> wisp <span class="kw">import</span> WispDevice, capability
+
+<span class="kw">class</span> <span class="cl">SmartHome</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"smart_home"</span>
+    device_description <span class="op">=</span> <span class="st">"Home controller with temperature, fan, and LED."</span>
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">read_temperature</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="st">"""Read temperature and humidity from BME280."""</span>
+        sensor <span class="op">=</span> <span class="bi">self</span>.hardware.sensor(<span class="st">"bme280"</span>)
+        <span class="kw">return</span> {
+            <span class="st">"temperature"</span>: <span class="bi">round</span>(sensor.temperature, <span class="num">2</span>),
+            <span class="st">"humidity"</span>: <span class="bi">round</span>(sensor.humidity, <span class="num">2</span>),
+            <span class="st">"unit"</span>: <span class="st">"C"</span>,
+        }
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">set_fan</span>(<span class="bi">self</span>, state: <span class="bi">str</span>) <span class="op">-></span> dict:
+        <span class="st">"""Turn the ceiling fan on or off. state: 'on' or 'off'."""</span>
+        <span class="bi">self</span>.hardware.set_output(<span class="st">"fan"</span>, state <span class="op">==</span> <span class="st">"on"</span>)
+        <span class="kw">return</span> {<span class="st">"fan"</span>: state}
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">set_led_brightness</span>(<span class="bi">self</span>, brightness: <span class="bi">int</span>) <span class="op">-></span> dict:
+        <span class="st">"""Set LED brightness 0-100."""</span>
+        <span class="bi">self</span>.hardware.pwm(<span class="st">"led"</span>, brightness)
+        <span class="kw">return</span> {<span class="st">"led_brightness"</span>: brightness}
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">all_off</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="st">"""Turn off all outputs."""</span>
+        <span class="bi">self</span>.hardware.set_output(<span class="st">"fan"</span>, <span class="bi">False</span>)
+        <span class="bi">self</span>.hardware.set_output(<span class="st">"led"</span>, <span class="bi">False</span>)
+        <span class="kw">return</span> {<span class="st">"fan"</span>: <span class="st">"off"</span>, <span class="st">"led"</span>: <span class="st">"off"</span>}
+
+
+SmartHome.from_config(<span class="st">"config.json"</span>).run()</code></pre>
+    </section>
+
+    <!-- Example 2 -->
+    <section id="weather-station">
+      <h2>Weather Station</h2>
+      <p>A Raspberry Pi with BME280, BH1750, and SHT31 sensors. Ask for any reading in plain English. Historical logging to a CSV file.</p>
+      <div class="console" style="margin-bottom:16px;">
+        <div class="chat-line chat-you"><span class="who">You:</span><span>is it bright enough to work without lights?</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>☀️ light: 420 lux — yes, plenty of natural light.</span></div>
+        <div class="chat-line chat-you"><span class="who">You:</span><span>log all sensors now</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>✅ Logged: temp=22.1°C, humidity=58%, lux=420</span></div>
+      </div>
+
+<pre><code><span class="cm"># examples/weather_station/main.py</span>
+<span class="kw">import</span> csv, time
+<span class="kw">from</span> wisp <span class="kw">import</span> WispDevice, capability
+
+<span class="kw">class</span> <span class="cl">WeatherStation</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"weather_station"</span>
+    device_description <span class="op">=</span> <span class="st">"Outdoor weather station with multiple sensors."</span>
+    LOG_FILE <span class="op">=</span> <span class="st">"log.csv"</span>
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">read_all</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="st">"""Read temperature, humidity, pressure, and light level."""</span>
+        bme <span class="op">=</span> <span class="bi">self</span>.hardware.sensor(<span class="st">"bme280"</span>)
+        lux <span class="op">=</span> <span class="bi">self</span>.hardware.sensor(<span class="st">"bh1750"</span>)
+        <span class="kw">return</span> {
+            <span class="st">"temperature"</span>: <span class="bi">round</span>(bme.temperature, <span class="num">2</span>),
+            <span class="st">"humidity"</span>: <span class="bi">round</span>(bme.humidity, <span class="num">2</span>),
+            <span class="st">"pressure"</span>: <span class="bi">round</span>(bme.pressure, <span class="num">1</span>),
+            <span class="st">"lux"</span>: <span class="bi">round</span>(lux.lux, <span class="num">1</span>),
+        }
+
+    <span class="fn">@capability</span>
+    <span class="kw">def</span> <span class="fn">log_reading</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="st">"""Log the current sensor reading to a CSV file."""</span>
+        data <span class="op">=</span> <span class="bi">self</span>.read_all()
+        data[<span class="st">"timestamp"</span>] <span class="op">=</span> time.strftime(<span class="st">"%Y-%m-%dT%H:%M:%S"</span>)
+        <span class="kw">with</span> <span class="bi">open</span>(<span class="bi">self</span>.LOG_FILE, <span class="st">"a"</span>, newline<span class="op">=</span><span class="st">""</span>) <span class="kw">as</span> f:
+            csv.DictWriter(f, data.keys()).writerow(data)
+        <span class="kw">return</span> {<span class="st">"logged"</span>: <span class="bi">True</span>, <span class="op">**</span>data}
+
+
+WeatherStation.from_config(<span class="st">"config.json"</span>).run()</code></pre>
+    </section>
+
+    <!-- Example 3 -->
+    <section id="ros2-robot">
+      <h2>ROS2 Robot</h2>
+      <p>Control a TurtleBot3 from Telegram — movement, sensors, navigation — with zero custom capability code. <code>ROS2Plugin</code> does it all.</p>
+      <div class="console" style="margin-bottom:16px;">
+        <div class="chat-line chat-you"><span class="who">You:</span><span>move forward for 2 seconds then stop</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>🤖 Moving forward... ✅ stopped.</span></div>
+        <div class="chat-line chat-you"><span class="who">You:</span><span>what's the battery level?</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>🔋 battery: 87%</span></div>
+        <div class="chat-line chat-you"><span class="who">You:</span><span>navigate to coordinates 2.0, 1.5</span></div>
+        <div class="chat-line chat-wisp"><span class="who">WISP:</span><span>🗺 Nav2 goal sent: x=2.0, y=1.5</span></div>
+      </div>
+
+<pre><code><span class="cm"># examples/ros2_robot/main.py</span>
+<span class="kw">import</span> rclpy
+<span class="kw">from</span> wisp <span class="kw">import</span> WispDevice
+<span class="kw">from</span> wisp.plugins.ros2 <span class="kw">import</span> ROS2Plugin
+
+<span class="kw">class</span> <span class="cl">TurtleBot</span>(WispDevice):
+    device_name <span class="op">=</span> <span class="st">"turtlebot3"</span>
+    device_description <span class="op">=</span> <span class="st">"TurtleBot3 Burger mobile robot."</span>
+    <span class="cm"># No @capability needed — ROS2Plugin discovers everything</span>
+
+rclpy.init()
+device <span class="op">=</span> TurtleBot.from_config(<span class="st">"config.json"</span>)
+device.use(<span class="fn">ROS2Plugin</span>())
+device.run()</code></pre>
+      <p>The matching <code>config.json</code>:</p>
+<pre><code>{
+  <span class="kw">"device_name"</span>: <span class="st">"turtlebot3"</span>,
+  <span class="kw">"ai"</span>: {
+    <span class="kw">"provider"</span>: <span class="st">"groq"</span>,
+    <span class="kw">"api_key"</span>: <span class="st">"gsk_your_key"</span>
+  },
+  <span class="kw">"telegram"</span>: {
+    <span class="kw">"token"</span>: <span class="st">"your_bot_token"</span>,
+    <span class="kw">"allowed_users"</span>: [<span class="st">"your_username"</span>]
+  }
+}</code></pre>
+    </section>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#smart-home" class="toc-link">Smart Home</a>
+      <a href="#weather-station" class="toc-link">Weather Station</a>
+      <a href="#ros2-robot" class="toc-link">ROS2 Robot</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;"><a href="quickstart.html">Docs</a><a href="api.html">API</a><a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a></div>
+</footer>
+<script src="nav.js"></script>
+</body>
+</html>

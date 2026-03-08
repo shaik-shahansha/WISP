@@ -1,0 +1,25 @@
+{
+  "device_name": "smart_home",
+  "wifi": {
+    "ssid": "YourWiFi",
+    "password": "YourPassword"
+  },
+  "telegram": {
+    "token": "YOUR_TELEGRAM_BOT_TOKEN"
+  },
+  "ai": {
+    "provider": "groq",
+    "api_key": "YOUR_GROQ_API_KEY",
+    "model": "llama-3.3-70b-versatile",
+    "max_tokens": 1024
+  },
+  "hardware": {
+    "i2c_sda": 21,
+    "i2c_scl": 22,
+    "i2c_freq": 400000,
+    "gpio_outputs": {
+      "fan":   5,
+      "light": 18
+    }
+  }
+}

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Transports — WISP</title>
+  <meta name="description" content="Telegram, CLI, and HTTP transports for the WISP framework."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+</head>
+<body>
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link active">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Framework</div>
+      <h1>Transports</h1>
+      <p class="lead">WISP ships with three built-in transports: Telegram, CLI, and HTTP. Switch between them with one line in config.</p>
+    </header>
+
+    <section id="overview">
+      <h2>Choosing a transport</h2>
+      <table>
+        <thead><tr><th>Transport</th><th>Best for</th><th>Requires</th></tr></thead>
+        <tbody>
+          <tr><td><code>telegram</code></td><td>Production — talk to devices from any phone</td><td>Bot token, internet</td></tr>
+          <tr><td><code>cli</code></td><td>Development — interactive terminal REPL</td><td>Nothing</td></tr>
+          <tr><td><code>http</code></td><td>Custom integrations — REST API on local network</td><td>Local network</td></tr>
+        </tbody>
+      </table>
+      <p>Set the transport in <code>config.json</code>:</p>
+<pre><code>{
+  <span class="kw">"transport"</span>: <span class="st">"telegram"</span>
+}</code></pre>
+      <p>Or override with an environment variable:</p>
+<pre><code><span class="prompt">$</span> WISP_TRANSPORT=cli wisp run</code></pre>
+    </section>
+
+    <section id="telegram">
+      <h2>Telegram transport</h2>
+      <p>The recommended production transport. Uses <strong>long-polling</strong> — no webhook server, no public IP required. Zero external dependencies.</p>
+
+      <h3>Setup</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <div class="step-title">Create a bot with @BotFather</div>
+            <p>Open Telegram, find <a href="https://t.me/BotFather" target="_blank">@BotFather</a>, send <code>/newbot</code>, and copy the token.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <div class="step-title">Add token to config.json</div>
+<pre><code>{
+  <span class="kw">"telegram"</span>: {
+    <span class="kw">"token"</span>: <span class="st">"123456:ABCdef..."</span>,
+    <span class="kw">"allowed_users"</span>: [<span class="st">"your_username"</span>],
+    <span class="kw">"poll_timeout"</span>: 30
+  }
+}</code></pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <div class="step-title">Run and message your bot</div>
+<pre><code><span class="prompt">$</span> wisp run</code></pre>
+            <p>Now open Telegram, find your bot, and send it any natural language message.</p>
+          </div>
+        </div>
+      </div>
+
+      <h3>User whitelist</h3>
+      <p><code>allowed_users</code> is a list of Telegram usernames (without <code>@</code>). Only these users can send commands. Leave the list empty to allow everyone:</p>
+<pre><code><span class="st">"allowed_users"</span>: []  <span class="cm">// allow any Telegram user</span></code></pre>
+      <div class="callout callout-warn">
+        <strong>Security:</strong> For devices on your local network or with physical actuators, always set an allowlist.
+      </div>
+
+      <h3>Config reference</h3>
+      <table>
+        <thead><tr><th>Key</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>token</code></td><td>string</td><td>—</td><td>Bot token from @BotFather. Required.</td></tr>
+          <tr><td><code>allowed_users</code></td><td>list</td><td><code>[]</code></td><td>Telegram usernames permitted to send commands.</td></tr>
+          <tr><td><code>poll_timeout</code></td><td>int</td><td><code>30</code></td><td>Long-poll timeout in seconds.</td></tr>
+          <tr><td><code>retry_delay</code></td><td>int</td><td><code>5</code></td><td>Seconds to wait before retrying after an error.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="cli">
+      <h2>CLI transport</h2>
+      <p>An interactive REPL that runs in your terminal. Ideal for rapid development — no bot token needed.</p>
+<pre><code><span class="prompt">$</span> wisp simulate
+<span class="out">WISP 0.1.0  [simulator mode]</span>
+<span class="out">Device: my_device  |  Capabilities: read_temp, set_fan</span>
+<span class="out">&gt;&gt;&gt;</span> what is the temperature?
+<span class="out">✅  temperature: 24.30, unit: C</span>
+<span class="out">&gt;&gt;&gt;</span> quit</code></pre>
+      <p>Alternatively, set <code>"transport": "cli"</code> in config and run <code>wisp run</code>.</p>
+    </section>
+
+    <section id="http">
+      <h2>HTTP transport</h2>
+      <p>A minimal HTTP server built on Python's stdlib <code>http.server</code>. Useful for integrating WISP into a larger system or calling it from a Home Assistant automation.</p>
+      <h3>Endpoints</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST</code></td><td><code>/message</code></td><td>Send a natural-language command. Body: <code>{"text": "...", "user": "..."}</code></td></tr>
+          <tr><td><code>GET</code></td><td><code>/capabilities</code></td><td>List all registered capabilities as JSON</td></tr>
+          <tr><td><code>GET</code></td><td><code>/health</code></td><td>Health check — returns <code>{"ok": true}</code></td></tr>
+        </tbody>
+      </table>
+      <h3>Config</h3>
+<pre><code>{
+  <span class="kw">"transport"</span>: <span class="st">"http"</span>,
+  <span class="kw">"_raw"</span>: {
+    <span class="kw">"transport_options"</span>: {
+      <span class="kw">"host"</span>: <span class="st">"0.0.0.0"</span>,
+      <span class="kw">"port"</span>: <span class="num">8080</span>
+    }
+  }
+}</code></pre>
+      <h3>Example call</h3>
+<pre><code><span class="prompt">$</span> curl -X POST http://localhost:8080/message \
+     -H "Content-Type: application/json" \
+     -d '{"text": "read temperature", "user": "admin"}'
+<span class="out">{"reply": "✅ temperature: 24.30, unit: C"}</span></code></pre>
+    </section>
+
+    <section id="custom">
+      <h2>Custom transport</h2>
+      <p>Subclass <code>BaseTransport</code> and implement <code>start()</code>:</p>
+<pre><code><span class="kw">from</span> wisp.transports.base <span class="kw">import</span> BaseTransport
+
+<span class="kw">class</span> <span class="cl">MQTTTransport</span>(BaseTransport):
+    <span class="kw">def</span> <span class="fn">start</span>(<span class="bi">self</span>) <span class="op">-></span> <span class="bi">None</span>:
+        <span class="cm"># subscribe to MQTT topic, call self.device.process_message()</span>
+        ...</code></pre>
+    </section>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#overview" class="toc-link">Choosing a transport</a>
+      <a href="#telegram" class="toc-link">Telegram</a>
+      <a href="#cli" class="toc-link">CLI</a>
+      <a href="#http" class="toc-link">HTTP</a>
+      <a href="#custom" class="toc-link">Custom transport</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;"><a href="quickstart.html">Docs</a><a href="api.html">API</a><a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a></div>
+</footer>
+<script src="nav.js"></script>
+</body>
+</html>

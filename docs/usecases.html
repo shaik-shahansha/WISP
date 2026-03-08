@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Use Cases — WISP</title>
+  <meta name="description" content="Personal and commercial use cases for WISP — the natural language device control framework."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f81f7'/><text x='9' y='24' font-size='20' font-weight='900' fill='white' font-family='Arial'>W</text></svg>"/>
+  <style>
+    .uc-hero {
+      background: linear-gradient(135deg, rgba(47,129,247,0.08) 0%, rgba(63,185,80,0.06) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+    .uc-hero h2 { border: none; padding: 0; margin: 0 0 12px; font-size: 1.8rem; }
+    .uc-hero p  { color: var(--text-muted); font-size: 1rem; max-width: 560px; margin: 0 auto; }
+    .uc-section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .label-personal { background: rgba(63,185,80,0.12); color: var(--accent2); border: 1px solid rgba(63,185,80,0.25); }
+    .label-commercial { background: rgba(47,129,247,0.12); color: #58a6ff; border: 1px solid rgba(47,129,247,0.25); }
+    .uc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+    .uc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .uc-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
+    .uc-card .uc-icon { font-size: 2rem; margin-bottom: 14px; }
+    .uc-card h3 { font-size: 1rem; margin: 0 0 8px; color: var(--text); }
+    .uc-card p  { font-size: 0.875rem; color: var(--text-muted); margin: 0 0 14px; line-height: 1.6; }
+    .uc-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .uc-tag {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .uc-cta {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      text-align: center;
+      margin-top: 48px;
+    }
+    .uc-cta h2 { border: none; padding: 0; margin: 0 0 12px; }
+    .uc-cta p { color: var(--text-muted); margin-bottom: 24px; }
+    @media (max-width: 600px) { .uc-hero { padding: 24px; } }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+  <a href="index.html" class="topbar-brand"><div class="brand-logo">W</div>WISP</a>
+  <nav class="topbar-nav">
+    <a href="quickstart.html">Quickstart</a>
+    <a href="api.html">API</a>
+    <a href="hardware.html">Hardware</a>
+    <a href="plugins.html">Plugins</a>
+    <a href="examples.html">Examples</a>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:8px;">
+    <a class="btn btn-ghost" href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a class="btn btn-primary" href="quickstart.html">Get started →</a>
+  </div>
+</header>
+
+<div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:89;"
+     onclick="document.getElementById('sidebar')?.classList.remove('open');this.style.display='none'"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">Getting Started</div>
+    <a href="index.html" class="sidebar-link">Introduction</a>
+    <a href="quickstart.html" class="sidebar-link">Quickstart</a>
+
+    <div class="sidebar-section">Framework</div>
+    <a href="api.html" class="sidebar-link">API Reference</a>
+    <a href="transports.html" class="sidebar-link">Transports</a>
+    <a href="hardware.html" class="sidebar-link">Hardware</a>
+
+    <div class="sidebar-section">Ecosystem</div>
+    <a href="plugins.html" class="sidebar-link">Plugins &amp; ROS2</a>
+    <a href="examples.html" class="sidebar-link">Examples</a>
+    <a href="usecases.html" class="sidebar-link active">Use Cases</a>
+    <a href="providers.html" class="sidebar-link">AI Providers</a>
+  </aside>
+
+  <article class="content">
+    <header class="page-header">
+      <div class="breadcrumb"><a href="index.html">WISP</a> › Ecosystem</div>
+      <h1>Use Cases</h1>
+      <p class="lead">What people build with WISP — from weekend home automation to commercial robotics deployments.</p>
+    </header>
+
+    <!-- Hero banner -->
+    <div class="uc-hero">
+      <h2>One framework. Infinite applications.</h2>
+      <p>If it has a sensor, an actuator, or a network connection — WISP can give it a natural language interface in minutes.</p>
+    </div>
+
+    <!-- PERSONAL USE CASES -->
+    <section id="personal">
+      <div class="uc-section-label label-personal">🏠 Personal</div>
+      <h2>Personal &amp; Home Projects</h2>
+      <p>Deploy on a $10 microcontroller or a Pi you already own. No cloud required. No subscription needed.</p>
+
+      <div class="uc-grid">
+
+        <div class="uc-card">
+          <div class="uc-icon">🌡</div>
+          <h3>Smart Home Dashboard</h3>
+          <p>Wire up a BME280 and a few relays. Ask Telegram "is it too hot?" and let WISP read the temperature, decide, and flip the fan relay — all from a single message.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ESP32</span>
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">BME280</span>
+            <span class="uc-tag">GPIO relay</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🌱</div>
+          <h3>Garden &amp; Plant Monitor</h3>
+          <p>Track soil moisture, ambient light, and temperature. Send a message like "does the basil need water?" and get a real sensor reading back.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Pico W</span>
+            <span class="uc-tag">BH1750</span>
+            <span class="uc-tag">Soil sensor</span>
+            <span class="uc-tag">Auto-watering</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🔒</div>
+          <h3>Remote Door &amp; Gate Control</h3>
+          <p>Control a servo or solenoid lock from anywhere in the world via Telegram. The user whitelist keeps it secure — only you can send commands.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ESP32</span>
+            <span class="uc-tag">Servo / solenoid</span>
+            <span class="uc-tag">GPIO</span>
+            <span class="uc-tag">Whitelist auth</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">☀️</div>
+          <h3>Rooftop Weather Station</h3>
+          <p>Log temperature, humidity, pressure, and lux to a CSV file. Ask "what was the peak temperature today?" and get a real answer from your own sensors.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">BME280</span>
+            <span class="uc-tag">SHT31</span>
+            <span class="uc-tag">BH1750</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🐾</div>
+          <h3>Pet Feeder Automation</h3>
+          <p>Schedule feeds, dispense extra treats on demand, and monitor remaining food level — all by typing natural messages to a Telegram bot.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ESP32</span>
+            <span class="uc-tag">Stepper motor</span>
+            <span class="uc-tag">Weight sensor</span>
+            <span class="uc-tag">Telegram</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🖥</div>
+          <h3>PC Power &amp; Monitor Control</h3>
+          <p>Use a Pi Zero as a hardware bridge. Remotely power cycle your desktop, check uptime, or turn off a second monitor — from your phone.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi Zero</span>
+            <span class="uc-tag">GPIO relay</span>
+            <span class="uc-tag">Custom CLI</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🤖</div>
+          <h3>DIY Home Robot</h3>
+          <p>Build a differential-drive robot with a Pi and any motor hat. Use ROS2Plugin to auto-discover movement and sensor topics, then drive it via Telegram.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">ROS2 Humble</span>
+            <span class="uc-tag">ROS2Plugin</span>
+            <span class="uc-tag">Motor driver</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🎮</div>
+          <h3>Retro Arcade &amp; LED Panel</h3>
+          <p>Control an LED matrix or strip with natural language. "Set the top row to blue" or "pulse green twice" — even non-programmers in your household can use it.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ESP32</span>
+            <span class="uc-tag">WS2812</span>
+            <span class="uc-tag">SSD1306 OLED</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- COMMERCIAL USE CASES -->
+    <section id="commercial">
+      <div class="uc-section-label label-commercial">🏢 Commercial</div>
+      <h2>Commercial &amp; Industrial Applications</h2>
+      <p>Embed WISP into a product, wrap it behind an HTTP transport, or use it as the NLP layer in a larger IoT platform.</p>
+
+      <div class="uc-grid">
+
+        <div class="uc-card">
+          <div class="uc-icon">🏭</div>
+          <h3>Factory Floor Monitoring</h3>
+          <p>Give line operators a Telegram bot that reads real-time machine data. No dashboard login, no training — workers ask questions in their own language.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">Modbus plugin</span>
+            <span class="uc-tag">HTTP transport</span>
+            <span class="uc-tag">Multi-user whitelist</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🚜</div>
+          <h3>Precision Agriculture</h3>
+          <p>Deploy sensor nodes across fields. A central Pi aggregates readings. Agronomists query soil and climate data in plain English from any phone.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ESP32 mesh</span>
+            <span class="uc-tag">Raspberry Pi gateway</span>
+            <span class="uc-tag">SHT31</span>
+            <span class="uc-tag">Custom plugin</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🏗</div>
+          <h3>Construction Site Safety</h3>
+          <p>MPU6050 detects vibration and tilt anomalies in scaffolding. WISP routes alerts to site managers and answers queries like "is the east tower stable?"</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ESP32</span>
+            <span class="uc-tag">MPU6050</span>
+            <span class="uc-tag">Telegram alerts</span>
+            <span class="uc-tag">Threshold capabilities</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🤖</div>
+          <h3>Commercial Delivery Robot</h3>
+          <p>Add a natural language control interface on top of an existing ROS2 robot stack. Non-technical staff can dispatch, redirect, or query robots via chat.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">ROS2 Humble / Iron</span>
+            <span class="uc-tag">Nav2</span>
+            <span class="uc-tag">ROS2Plugin</span>
+            <span class="uc-tag">Fleet management</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🏥</div>
+          <h3>Healthcare Equipment Monitoring</h3>
+          <p>Attach WISP to bedside sensor arrays. Nursing staff confirm equipment status with a simple message — no dedicated terminal required.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">Custom I2C sensors</span>
+            <span class="uc-tag">HTTP transport</span>
+            <span class="uc-tag">Audit logging</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">⚡</div>
+          <h3>Energy Management System</h3>
+          <p>Query real-time power draw, toggle loads, and get daily consumption summaries. Integrates with existing BMS over I2C or Modbus via a custom plugin.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">Modbus plugin</span>
+            <span class="uc-tag">GPIO relay bank</span>
+            <span class="uc-tag">CSV logging</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🏬</div>
+          <h3>Retail Environment Control</h3>
+          <p>Store managers control HVAC, lighting, and refrigeration zones across multiple locations — all from a Telegram bot, without an expensive SCADA system.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Multi-Pi setup</span>
+            <span class="uc-tag">BME280</span>
+            <span class="uc-tag">Relay control</span>
+            <span class="uc-tag">Remote deploy</span>
+          </div>
+        </div>
+
+        <div class="uc-card">
+          <div class="uc-icon">🔬</div>
+          <h3>Lab &amp; Research Automation</h3>
+          <p>Researchers describe experiments in plain English. WISP translates them into GPIO sequences, sensor reads, and timed actuator events — no Python knowledge required.</p>
+          <div class="uc-tags">
+            <span class="uc-tag">Raspberry Pi</span>
+            <span class="uc-tag">Custom sensors</span>
+            <span class="uc-tag">Timed capabilities</span>
+            <span class="uc-tag">HTTP transport</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CODE PATTERN CALLOUT -->
+    <section id="patterns">
+      <h2>Common implementation patterns</h2>
+      <p>Most use cases map cleanly to one of three patterns:</p>
+
+      <div class="callout callout-info">
+        <strong>Pattern 1 — Sense &amp; Report:</strong> Sensor readings wrapped in <code>@capability</code>. Users ask, WISP reads the hardware and replies. Zero side effects.
+      </div>
+      <div class="callout callout-tip">
+        <strong>Pattern 2 — Sense &amp; Act:</strong> Sensor read + conditional actuator control in one capability. "If it's above 30°C, turn on the fan." The AI chains capabilities or you implement the logic explicitly.
+      </div>
+      <div class="callout callout-warn">
+        <strong>Pattern 3 — Plugin Integration:</strong> A third-party API or protocol (Modbus, MQTT, REST) wrapped in a <code>WispPlugin</code>. Attach it to any device without modifying the device class.
+      </div>
+
+<pre><code><span class="cm"># Pattern 3 — Wrapping a third-party system as a plugin</span>
+<span class="kw">class</span> <span class="cl">ModbusPlugin</span>(WispPlugin):
+    <span class="kw">def</span> <span class="fn">attach</span>(<span class="bi">self</span>, device) <span class="op">-></span> <span class="bi">None</span>:
+        device.registry.register(CapabilitySpec(
+            name<span class="op">=</span><span class="st">"read_power_draw"</span>,
+            description<span class="op">=</span><span class="st">"Read current power consumption in watts."</span>,
+            method<span class="op">=</span><span class="bi">self</span>._read,
+        ))
+
+    <span class="kw">def</span> <span class="fn">_read</span>(<span class="bi">self</span>) <span class="op">-></span> dict:
+        <span class="cm"># read register 0x0001 from Modbus device 1</span>
+        watts <span class="op">=</span> <span class="bi">self</span>.client.read_holding_registers(<span class="num">1</span>, <span class="num">1</span>).registers[<span class="num">0</span>]
+        <span class="kw">return</span> {<span class="st">"power_draw_w"</span>: watts}</code></pre>
+    </section>
+
+    <!-- CTA -->
+    <div class="uc-cta">
+      <h2>Start building yours</h2>
+      <p>It takes under 5 minutes to go from <code>pip install wisp-ai</code> to a working Telegram bot controlling real hardware.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a class="btn btn-primary" href="quickstart.html" style="padding:10px 24px;">Quickstart guide →</a>
+        <a class="btn btn-ghost" href="examples.html" style="padding:10px 24px;">Browse examples</a>
+      </div>
+    </div>
+
+  </article>
+
+  <aside class="toc">
+    <div class="toc-title">On this page</div>
+    <nav>
+      <a href="#personal" class="toc-link">Personal &amp; Home</a>
+      <a href="#commercial" class="toc-link">Commercial &amp; Industrial</a>
+      <a href="#patterns" class="toc-link">Implementation patterns</a>
+    </nav>
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;font-size:0.82rem;color:var(--text-dim);flex-wrap:wrap;gap:12px;">
+  <div>© 2026 WISP · <a href="https://github.com/shaik-shahansha/wisp/blob/main/LICENSE" target="_blank">MIT License</a></div>
+  <div style="display:flex;gap:20px;">
+    <a href="quickstart.html">Docs</a>
+    <a href="api.html">API</a>
+    <a href="https://github.com/shaik-shahansha/wisp" target="_blank">GitHub</a>
+    <a href="https://pypi.org/project/wisp-ai/" target="_blank">PyPI</a>
+  </div>
+</footer>
+
+<script src="nav.js"></script>
+</body>
+</html>
